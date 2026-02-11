@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Servidor - Prefeitura de Botucatu</title>
+  <!-- Estilo mínimo para funcionalidade -->
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sidebar { float: left; width: 300px; margin-right: 20px; }
+    .content { float: left; width: calc(100% - 340px); }
+    .clear { clear: both; }
+    .panel { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+    .request-list { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+    .request-list li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+    .request-list li:hover { background: #e6f7ff; }
+    .selected { background: #bae7ff; font-weight: bold; }
+    .detail-row { margin-bottom: 8px; }
+    .detail-label { font-weight: bold; display: inline-block; width: 180px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+    .btn-approve { background: #52c41a; color: white; }
+    .btn-deny { background: #ff4d4f; color: white; }
+    .btn:hover { opacity: 0.9; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Painel do Servidor</h2>
+      <button id="logoutBtn" class="btn" style="background: #ff4d4f; color: white;">Sair</button>
+    </div>
+
+    <!-- Verificação de login será feita via JS, se não logado redireciona -->
+    <div id="loginVerification" style="display: none; background: #fee; padding: 20px;">
+      <p style="color: red;">Você não está logado como servidor.</p>
+      <a href="servidor-login.html">Ir para login</a>
+    </div>
+
+    <div id="mainContent" style="display: none;">
+      <!-- Sidebar esquerda: dados do servidor e solicitações pendentes -->
+      <div class="sidebar">
+        <div class="panel">
+          <h3>Servidor</h3>
+          <p><strong>Nome:</strong> <span id="servidorNome"></span></p>
+          <p><strong>RI:</strong> <span id="servidorRI"></span></p>
+        </div>
+
+        <div class="panel">
+          <h3>Solicitações Pendentes</h3>
+          <ul id="pendingList" class="request-list">
+            <li>Carregando...</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Solicitações Atendidas</h3>
+          <div id="attendedList" style="max-height: 400px; overflow-y: auto;">
+            <!-- Tabela será inserida aqui via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Conteúdo principal: detalhes da solicitação selecionada -->
+      <div class="content">
+        <div id="requestDetails" class="panel">
+          <h3>Detalhes da Solicitação</h3>
+          <p>Selecione uma solicitação na lista ao lado.</p>
+        </div>
+
+        <!-- Área para ações (deferir/indeferir) -->
+        <div id="actionArea" style="display: none;">
+          <div id="approveArea" style="display: none;">
+            <h4>Anexar Croqui (Deferir)</h4>
+            <input type="file" id="croquiFile" accept=".pdf,.jpg,.jpeg,.png">
+            <button id="confirmApproveBtn" class="btn btn-approve">Confirmar Deferimento</button>
+          </div>
+          <div id="denyArea" style="display: none;">
+            <h4>Motivo do Indeferimento</h4>
+            <textarea id="denyReason" rows="4" style="width: 100%;"></textarea>
+            <button id="confirmDenyBtn" class="btn btn-deny">Confirmar Indeferimento</button>
+          </div>
+        </div>
+
+        <div id="message"></div>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+
+    // ----- Verificação de login do servidor -----
+    const servidorSession = localStorage.getItem('servidor');
+    const loginVerification = document.getElementById('loginVerification');
+    const mainContent = document.getElementById('mainContent');
+
+    if (!servidorSession) {
+      loginVerification.style.display = 'block';
+      mainContent.style.display = 'none';
+      throw new Error('Servidor não logado');
+    }
+
+    let servidor;
+    try {
+      servidor = JSON.parse(servidorSession);
+    } catch (e) {
+      localStorage.removeItem('servidor');
+      window.location.href = 'servidor-login.html';
+    }
+
+    // Exibir dados do servidor
+    document.getElementById('servidorNome').textContent = servidor.nome || 'Servidor';
+    document.getElementById('servidorRI').textContent = servidor.ri || '';
+
+    // ----- Variáveis globais -----
+    let selectedRequestId = null;
+
+    // ----- Funções de carregamento -----
+    async function carregarPendentes() {
+      const { data, error } = await supabase
+        .from('croqui_requests')
+        .select(`
+          id,
+          iptu,
+          logradouro,
+          quadra,
+          lote,
+          created_at,
+          user_id,
+          municipes!inner (
+            full_name,
+            cpf
+          )
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar pendentes:', error);
+        document.getElementById('pendingList').innerHTML = '<li style="color:red;">Erro ao carregar.</li>';
+        return;
+      }
+
+      const listEl = document.getElementById('pendingList');
+      if (!data || data.length === 0) {
+        listEl.innerHTML = '<li>Nenhuma solicitação pendente.</li>';
+        return;
+      }
+
+      listEl.innerHTML = data.map(req => `
+        <li onclick="window.selecionarSolicitacao('${req.id}')" class="${selectedRequestId === req.id ? 'selected' : ''}">
+          <strong>${req.municipes.full_name}</strong><br>
+          ${req.logradouro} - ${req.created_at ? new Date(req.created_at).toLocaleDateString('pt-BR') : ''}
+        </li>
+      `).join('');
+    }
+
+    // Tornar função global para acesso pelo onclick
+    window.selecionarSolicitacao = async (id) => {
+      selectedRequestId = id;
+      await carregarDetalhes(id);
+      await carregarPendentes(); // atualiza a classe selected
+    };
+
+    async function carregarDetalhes(id) {
+      // Buscar dados da solicitação + municipe
+      const { data: request, error } = await supabase
+        .from('croqui_requests')
+        .select(`
+          *,
+          municipes!inner (
+            full_name,
+            cpf,
+            father_name,
+            mother_name
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error || !request) {
+        document.getElementById('requestDetails').innerHTML = '<p style="color:red;">Erro ao carregar detalhes.</p>';
+        return;
+      }
+
+      // Montar HTML dos detalhes
+      const municipe = request.municipes;
+      let html = `
+        <h3>Detalhes da Solicitação</h3>
+        <div class="detail-row"><span class="detail-label">Nome do munícipe:</span> ${municipe.full_name || ''}</div>
+        <div class="detail-row"><span class="detail-label">Nome do pai:</span> ${municipe.father_name || ''}</div>
+        <div class="detail-row"><span class="detail-label">Nome da mãe:</span> ${municipe.mother_name || ''}</div>
+        <div class="detail-row"><span class="detail-label">CPF:</span> ${municipe.cpf || ''}</div>
+        <div class="detail-row"><span class="detail-label">Identificação do imóvel:</span> ${request.iptu || ''}</div>
+        <div class="detail-row"><span class="detail-label">Logradouro:</span> ${request.logradouro || ''}</div>
+        <div class="detail-row"><span class="detail-label">Quadra:</span> ${request.quadra || ''}</div>
+        <div class="detail-row"><span class="detail-label">Lote:</span> ${request.lote || ''}</div>
+        <div class="detail-row"><span class="detail-label">Documento de posse:</span> 
+      `;
+
+      if (request.document_url) {
+        html += `<a href="${request.document_url}" target="_blank">Visualizar documento</a>`;
+      } else {
+        html += 'Não enviado';
+      }
+      html += `</div>`;
+
+      document.getElementById('requestDetails').innerHTML = html;
+
+      // Mostrar área de ações
+      const actionArea = document.getElementById('actionArea');
+      actionArea.style.display = 'block';
+      
+      // Esconder sub-áreas por padrão
+      document.getElementById('approveArea').style.display = 'none';
+      document.getElementById('denyArea').style.display = 'none';
+
+      // Criar botões de ação (se ainda não existirem)
+      if (!document.getElementById('approveBtn')) {
+        const actionAreaDiv = document.getElementById('actionArea');
+        const btnDiv = document.createElement('div');
+        btnDiv.id = 'actionButtons';
+        btnDiv.style.marginTop = '20px';
+        btnDiv.innerHTML = `
+          <button id="approveBtn" class="btn btn-approve">Deferir (aprovar)</button>
+          <button id="denyBtn" class="btn btn-deny">Indeferir (negar)</button>
+        `;
+        actionAreaDiv.prepend(btnDiv);
+
+        // Eventos dos botões
+        document.getElementById('approveBtn').addEventListener('click', () => {
+          document.getElementById('approveArea').style.display = 'block';
+          document.getElementById('denyArea').style.display = 'none';
+        });
+
+        document.getElementById('denyBtn').addEventListener('click', () => {
+          document.getElementById('denyArea').style.display = 'block';
+          document.getElementById('approveArea').style.display = 'none';
+        });
+
+        // Confirmar deferimento
+        document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
+          const fileInput = document.getElementById('croquiFile');
+          const file = fileInput.files[0];
+          if (!file) {
+            alert('Selecione o arquivo do croqui.');
+            return;
+          }
+
+          try {
+            // Upload do croqui
+            const fileName = `croquis/${request.id}_${Date.now()}.${file.name.split('.').pop()}`;
+            const { error: uploadError } = await supabase.storage
+              .from('documentos') // mesmo bucket
+              .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+              .from('documentos')
+              .getPublicUrl(fileName);
+            const croquiUrl = urlData.publicUrl;
+
+            // Atualizar solicitação
+            const { error: updateError } = await supabase
+              .from('croqui_requests')
+              .update({
+                status: 'approved',
+                analyzed_by: servidor.id,
+                deferred_document_url: croquiUrl,
+                analyzed_at: new Date()
+              })
+              .eq('id', request.id);
+
+            if (updateError) throw updateError;
+
+            alert('Solicitação deferida com sucesso!');
+            // Recarregar listas
+            await carregarPendentes();
+            await carregarAtendidas();
+            document.getElementById('actionArea').style.display = 'none';
+            document.getElementById('requestDetails').innerHTML = '<p>Solicitação aprovada. Selecione outra.</p>';
+            selectedRequestId = null;
+          } catch (err) {
+            console.error(err);
+            alert('Erro ao deferir: ' + err.message);
+          }
+        });
+
+        // Confirmar indeferimento
+        document.getElementById('confirmDenyBtn').addEventListener('click', async () => {
+          const reason = document.getElementById('denyReason').value.trim();
+          if (!reason) {
+            alert('Digite o motivo do indeferimento.');
+            return;
+          }
+
+          try {
+            const { error: updateError } = await supabase
+              .from('croqui_requests')
+              .update({
+                status: 'denied',
+                analyzed_by: servidor.id,
+                denial_reason: reason,
+                analyzed_at: new Date()
+              })
+              .eq('id', request.id);
+
+            if (updateError) throw updateError;
+
+            alert('Solicitação indeferida com sucesso!');
+            await carregarPendentes();
+            await carregarAtendidas();
+            document.getElementById('actionArea').style.display = 'none';
+            document.getElementById('requestDetails').innerHTML = '<p>Solicitação negada. Selecione outra.</p>';
+            selectedRequestId = null;
+          } catch (err) {
+            console.error(err);
+            alert('Erro ao indeferir: ' + err.message);
+          }
+        });
+      }
+    }
+
+    async function carregarAtendidas() {
+      const { data, error } = await supabase
+        .from('croqui_requests')
+        .select(`
+          id,
+          status,
+          analyzed_at,
+          denial_reason,
+          deferred_document_url,
+          logradouro,
+          analyzed_by,
+          servidores!analyzed_by (
+            nome,
+            ri
+          ),
+          municipes!user_id (
+            full_name
+          )
+        `)
+        .in('status', ['approved', 'denied', 'forwarded'])
+        .order('analyzed_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar atendidas:', error);
+        document.getElementById('attendedList').innerHTML = '<p style="color:red;">Erro ao carregar.</p>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        document.getElementById('attendedList').innerHTML = '<p>Nenhuma solicitação atendida ainda.</p>';
+        return;
+      }
+
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>Munícipe</th>
+            <th>Endereço</th>
+            <th>Status</th>
+            <th>Servidor</th>
+            <th>RI</th>
+            <th>Data</th>
+            <th>Motivo (se negado)</th>
+            <th>Croqui</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      data.forEach(req => {
+        const statusMap = {
+          approved: '✅ Deferido',
+          denied: '❌ Indeferido',
+          forwarded: '↪️ Encaminhado'
+        };
+        const servidorNome = req.servidores?.nome || 'Desconhecido';
+        const servidorRI = req.servidores?.ri || '-';
+        const dataStr = req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-';
+        const motivo = req.status === 'denied' ? req.denial_reason : '-';
+        const croquiLink = req.deferred_document_url ? `<a href="${req.deferred_document_url}" target="_blank">Ver croqui</a>` : '-';
+
+        html += `<tr>
+          <td>${req.municipes?.full_name || '-'}</td>
+          <td>${req.logradouro || '-'}</td>
+          <td>${statusMap[req.status] || req.status}</td>
+          <td>${servidorNome}</td>
+          <td>${servidorRI}</td>
+          <td>${dataStr}</td>
+          <td>${motivo}</td>
+          <td>${croquiLink}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('attendedList').innerHTML = html;
+    }
+
+    // ----- Logout -----
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('servidor');
+      window.location.href = 'servidor-login.html';
+    });
+
+    // ----- Inicialização -----
+    loginVerification.style.display = 'none';
+    mainContent.style.display = 'block';
+
+    await carregarPendentes();
+    await carregarAtendidas();
+  </script>
+</body>
+</html>
