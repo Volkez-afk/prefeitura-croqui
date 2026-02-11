@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Prefeitura</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container" style="max-width: 400px;">
+    <h2>Acesso ao Sistema</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit" class="btn" style="width: 100%;">Entrar</button>
+      <div id="errorMessage" style="color: red; margin-top: 15px; text-align: center;"></div>
+    </form>
+    <div style="margin-top: 20px; text-align: center;">
+      <a href="index.html">← Voltar</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { login, redirectBasedOnRole } from './js/auth.js'
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+      const errorDiv = document.getElementById('errorMessage')
+
+      try {
+        await login(email, password)
+        await redirectBasedOnRole()
+      } catch (error) {
+        errorDiv.textContent = 'E-mail ou senha inválidos'
+        console.error(error)
+      }
+    })
+  </script>
+</body>
+</html>
