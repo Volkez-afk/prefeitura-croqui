@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* ESTILOS IGUAIS AO LOGIN */
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Inter', sans-serif;
@@ -57,7 +56,6 @@
   </style>
 </head>
 <body>
-  <!-- BARRA DE ACESSIBILIDADE -->
   <div class="accessibility-bar">
     <div class="container">
       <div class="accessibility-links">
@@ -68,8 +66,6 @@
       </div>
     </div>
   </div>
-
-  <!-- CABEÇALHO -->
   <div class="main-header">
     <div class="container">
       <div class="logo-area">
@@ -81,8 +77,6 @@
       </div>
     </div>
   </div>
-
-  <!-- FORMULÁRIO DE CADASTRO -->
   <div class="auth-container">
     <h2>Criar sua conta</h2>
     <p>Preencha seus dados para se cadastrar</p>
@@ -130,8 +124,6 @@
       Já possui cadastro? <a href="login.html">Fazer login</a>
     </div>
   </div>
-
-  <!-- RODAPÉ -->
   <footer>
     <div class="container">
       <div class="footer-content">
@@ -146,14 +138,11 @@
       </div>
     </div>
   </footer>
-
   <script>
-    // ===== CONFIGURAÇÃO SUPABASE =====
     const SUPABASE_URL = 'https://wtgxzswahhwqjuasnrie.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_uMEfaVJdfXEt264vEZVrFA_GoJDC1gk';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ===== MÁSCARAS E VALIDAÇÕES =====
     function formatCPF(value) {
       return value.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, '$1.$2')
@@ -166,19 +155,16 @@
       cpf = cpf.replace(/\D/g, '');
       if (cpf.length !== 11) return false;
       if (/^(\d)\1{10}$/.test(cpf)) return false;
-      
-      let sum = 0, remainder;
+      let sum = 0, rem;
       for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
-      remainder = (sum * 10) % 11;
-      if (remainder === 10 || remainder === 11) remainder = 0;
-      if (remainder !== parseInt(cpf.substring(9, 10))) return false;
-      
+      rem = (sum * 10) % 11;
+      if (rem === 10 || rem === 11) rem = 0;
+      if (rem !== parseInt(cpf.substring(9, 10))) return false;
       sum = 0;
       for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
-      remainder = (sum * 10) % 11;
-      if (remainder === 10 || remainder === 11) remainder = 0;
-      if (remainder !== parseInt(cpf.substring(10, 11))) return false;
-      
+      rem = (sum * 10) % 11;
+      if (rem === 10 || rem === 11) rem = 0;
+      if (rem !== parseInt(cpf.substring(10, 11))) return false;
       return true;
     }
 
@@ -190,7 +176,6 @@
     const password = document.getElementById('password');
     const confirm = document.getElementById('passwordConfirm');
     const matchMsg = document.getElementById('passwordMatchMsg');
-
     function checkPasswordMatch() {
       if (password.value && confirm.value) {
         if (password.value !== confirm.value) {
@@ -206,10 +191,8 @@
     password.addEventListener('input', checkPasswordMatch);
     confirm.addEventListener('input', checkPasswordMatch);
 
-    // ===== SUBMISSÃO DO FORMULÁRIO =====
     document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       const email = document.getElementById('email').value;
       const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
       const senha = document.getElementById('password').value;
@@ -218,12 +201,10 @@
       const pai = document.getElementById('pai').value || null;
       const mae = document.getElementById('mae').value || null;
       const celular = document.getElementById('celular').value;
-      
       const msgDiv = document.getElementById('cadastroMessage');
       msgDiv.className = 'auth-message';
       const btn = document.getElementById('btnCadastrar');
 
-      // Validações
       if (!isValidCPF(cpf)) {
         msgDiv.className = 'auth-message error-message';
         msgDiv.textContent = 'CPF inválido.';
@@ -244,13 +225,11 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
 
-        // 1. Verificar se CPF já existe na tabela municipes
         const { data: cpfExistente, error: cpfError } = await supabase
           .from('municipes')
           .select('cpf')
           .eq('cpf', cpf)
           .maybeSingle();
-
         if (cpfError) throw cpfError;
         if (cpfExistente) {
           msgDiv.className = 'auth-message error-message';
@@ -260,16 +239,13 @@
           return;
         }
 
-        // 2. Criar usuário no Auth (Supabase)
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: email,
           password: senha,
         });
-
         if (signUpError) throw signUpError;
         if (!signUpData.user) throw new Error('Erro ao criar usuário');
 
-        // 3. Inserir dados na tabela municipes
         const { error: insertError } = await supabase
           .from('municipes')
           .insert([{
@@ -281,16 +257,11 @@
             mother_name: mae,
             phone: celular
           }]);
-
         if (insertError) throw insertError;
 
-        // 4. Sucesso! Redireciona para login
         msgDiv.className = 'auth-message success-message';
         msgDiv.textContent = 'Cadastro realizado com sucesso! Redirecionando para login...';
-        
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 2000);
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
       } catch (error) {
         console.error('Erro no cadastro:', error);
         msgDiv.className = 'auth-message error-message';
