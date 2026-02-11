@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Servidor - Análise de Croquis</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>Painel do Servidor</h2>
+      <button id="logoutBtn" class="btn logout-btn">Sair</button>
+    </div>
+    
+    <div style="margin: 20px 0;">
+      <label for="statusFilter">Filtrar por status:</label>
+      <select id="statusFilter">
+        <option value="pending">Pendentes</option>
+        <option value="approved">Aprovados</option>
+        <option value="denied">Negados</option>
+        <option value="forwarded">Encaminhados</option>
+        <option value="all">Todos</option>
+      </select>
+    </div>
+
+    <div id="requestsTable"></div>
+  </div>
+
+  <!-- Modal de detalhes / análise -->
+  <div id="analysisModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+      <h3>Detalhes da Solicitação</h3>
+      <div id="modalContent"></div>
+      <div style="margin-top: 20px;">
+        <label for="server_notes">Observações do servidor:</label>
+        <textarea id="server_notes" rows="3" style="width: 100%; padding: 8px;"></textarea>
+      </div>
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button id="approveBtn" class="btn" style="background-color: #28a745;">Aprovar</button>
+        <button id="denyBtn" class="btn" style="background-color: #dc3545;">Negar</button>
+        <button id="forwardBtn" class="btn" style="background-color: #17a2b8;">Encaminhar para Sabesp/CPFL</button>
+        <button id="closeModalBtn" class="btn btn-secondary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js'
+    import { logout, checkRole, redirectBasedOnRole } from './js/auth.js'
+
+    // Proteção: apenas servidores e admin
+    if (!await checkRole(['admin', 'server'])) {
+      window.location.href = 'login.html'
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', logout)
+
+    let currentRequest = null
+
+    // Carregar solicitações
+    async function loadRequests(status = 'pending') {
+      let query = supabase.from('croqui_requests').select('*')
+      if (status !== 'all') {
+        query = query.eq('status', status)
+      }
+      query = query.order('created_at', { ascending: false })
+
+      const { data, error } = await query
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      renderRequests(data)
+    }
+
+    // Renderizar tabela
+    function renderRequests(requests) {
+      const tableDiv = document.getElementById('requestsTable')
+      if (requests.length === 0) {
+        tableDiv.innerHTML = '<p>Nenhuma solicitação encontrada.</p>'
+        return
+      }
+
+      let html = '<table class="table"><thead><tr><th>ID</th><th>Nome</th><th>Endereço</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead><tbody>'
+      
+      requests.forEach(req => {
+        html += `<tr>
+          <td>${req.id}</td>
+          <td>${req.name}</td>
+          <td>${req.address.substring(0, 30)}...</td>
+          <td>${req.croqui_type === 'oficial' ? 'Oficial' : 'Localização'}</td>
+          <td class="status-${req.status}">${req.status}</td>
+          <td>${new Date(req.created_at).toLocaleDateString('pt-BR')}</td>
+          <td><button class="btn" onclick="window.openRequest(${req.id})">Analisar</button></td>
+        </tr>`
+      })
+      
+      html += '</tbody></table>'
+      tableDiv.innerHTML = html
+    }
+
+    // Abrir modal com detalhes
+    window.openRequest = async (id) => {
+      const { data, error } = await supabase
+        .from('croqui_requests')
+        .select('*')
+        .eq('id', id)
+        .single()
+      
+      if (error) {
+        alert('Erro ao carregar solicitação')
+        return
+      }
+
+      currentRequest = data
+      const modal = document.getElementById('analysisModal')
+      const content = document.getElementById('modalContent')
+      
+      content.innerHTML = `
+        <p><strong>ID:</strong> ${data.id}</p>
+        <p><strong>Nome:</strong> ${data.name}</p>
+        <p><strong>E-mail:</strong> ${data.email}</p>
+        <p><strong>Telefone:</strong> ${data.phone || '-'}</p>
+        <p><strong>Endereço:</strong> ${data.address}</p>
+        <p><strong>Descrição:</strong> ${data.property_description || '-'}</p>
+        <p><strong>Tipo:</strong> ${data.croqui_type === 'oficial' ? 'Oficial' : 'Localização'}</p>
+        <p><strong>Status atual:</strong> <span class="status-${data.status}">${data.status}</span></p>
+        <p><strong>Observações do servidor:</strong> ${data.server_notes || '-'}</p>
+      `
+      
+      document.getElementById('server_notes').value = data.server_notes || ''
+      modal.style.display = 'flex'
+    }
+
+    // Ações do modal
+    document.getElementById('approveBtn').addEventListener('click', async () => {
+      await updateRequestStatus('approved')
+    })
+    document.getElementById('denyBtn').addEventListener('click', async () => {
+      await updateRequestStatus('denied')
+    })
+    document.getElementById('forwardBtn').addEventListener('click', async () => {
+      if (currentRequest.croqui_type !== 'oficial') {
+        alert('Apenas croquis oficiais podem ser encaminhados para Sabesp/CPFL.')
+        return
+      }
+      await updateRequestStatus('forwarded')
+    })
+
+    async function updateRequestStatus(newStatus) {
+      if (!currentRequest) return
+
+      const notes = document.getElementById('server_notes').value
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const updates = {
+        status: newStatus,
+        server_notes: notes,
+        analyzed_by: user.id
+      }
+
+      if (newStatus === 'forwarded') {
+        updates.forwarded_at = new Date()
+      }
+
+      const { error } = await supabase
+        .from('croqui_requests')
+        .update(updates)
+        .eq('id', currentRequest.id)
+
+      if (error) {
+        alert('Erro ao atualizar solicitação')
+        console.error(error)
+      } else {
+        document.getElementById('analysisModal').style.display = 'none'
+        loadRequests(document.getElementById('statusFilter').value)
+      }
+    }
+
+    // Fechar modal
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('analysisModal').style.display = 'none'
+    })
+
+    // Filtro
+    document.getElementById('statusFilter').addEventListener('change', (e) => {
+      loadRequests(e.target.value)
+    })
+
+    // Carregar inicial
+    loadRequests()
+  </script>
+</body>
+</html>
