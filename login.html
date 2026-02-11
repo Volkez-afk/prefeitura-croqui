@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Login - Prefeitura de Botucatu</title>
-  <!-- Nenhum estilo complexo, apenas o essencial -->
 </head>
 <body>
   <h2>Acessar sua conta</h2>
@@ -28,9 +27,8 @@
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
-    // Máscara de CPF (mesma do cadastro)
-    function formatCPF(value) {
-      return value.replace(/\D/g, '')
+    function formatCPF(v) {
+      return v.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
@@ -38,11 +36,10 @@
     }
 
     const cpfInput = document.getElementById('cpf');
-    cpfInput.addEventListener('input', function(e) {
+    cpfInput.addEventListener('input', (e) => {
       e.target.value = formatCPF(e.target.value);
     });
 
-    // Submissão do formulário
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -63,45 +60,27 @@
       btn.textContent = 'Entrando...';
 
       try {
-        // 1. Buscar o e-mail associado ao CPF na tabela municipes
-        const { data: municipe, error: errBusca } = await supabase
-          .from('municipes')
-          .select('email')
-          .eq('cpf', cpf)
-          .maybeSingle();
-
-        if (errBusca) throw errBusca;
-
-        // 2. Se não encontrou o CPF
-        if (!municipe) {
-          msgDiv.textContent = 'CPF ou Senha INVÁLIDOS ou NÃO Cadastrados.';
-          btn.disabled = false;
-          btn.textContent = 'Entrar';
-          return;
-        }
-
-        // 3. Tentar login com o e-mail e senha
-        const { error: errLogin } = await supabase.auth.signInWithPassword({
-          email: municipe.email,
+        // Tentar login diretamente com CPF + senha
+        const { error } = await supabase.auth.signInWithPassword({
+          email: `${cpf}@cpf.botucatu`,  // mesmo formato usado no cadastro
           password: senha
         });
 
-        if (errLogin) {
-          // Qualquer erro de login (senha incorreta, usuário não confirmado etc.)
+        if (error) {
           msgDiv.textContent = 'CPF ou Senha INVÁLIDOS ou NÃO Cadastrados.';
           btn.disabled = false;
           btn.textContent = 'Entrar';
           return;
         }
 
-        // 4. Sucesso!
+        // Sucesso!
         msgDiv.style.color = 'green';
         msgDiv.textContent = 'Login efetuado! Redirecionando...';
         setTimeout(() => {
           window.location.href = 'solicitar.html';
         }, 1500);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         msgDiv.textContent = 'Erro ao tentar fazer login. Tente novamente.';
         btn.disabled = false;
         btn.textContent = 'Entrar';
