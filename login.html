@@ -4,16 +4,101 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Prefeitura de Botucatu</title>
-  <!-- (mesmo estilo do cadastro, igual ao anterior) -->
-  <!-- ... (copie os estilos do cadastro, trocando o título) ... -->
-  <style>/* cole os mesmos estilos do cadastro aqui */</style>
+  <!-- FONTES E ÍCONES (mesmo estilo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ========== MESMO ESTILO DO CADASTRO ========== */
+    /* (copie o bloco de estilos do cadastro.html) */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; line-height:1.5; display:flex; flex-direction:column; min-height:100vh; }
+    .container { max-width:1100px; margin:0 auto; padding:0 24px; width:100%; }
+    .accessibility-bar { background:#0a4b6e; color:white; padding:8px 0; font-size:13px; }
+    .accessibility-bar .container { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .accessibility-links { display:flex; gap:20px; flex-wrap:wrap; }
+    .accessibility-links a { color:white; text-decoration:none; display:flex; align-items:center; gap:6px; }
+    .main-header { background:white; padding:30px 0 20px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02); }
+    .main-header .container { display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .logo-area { display:flex; align-items:center; gap:20px; justify-content:center; flex-wrap:wrap; }
+    .logo-brasao { width:80px; height:80px; object-fit:contain; }
+    .titulos-prefeitura { display:flex; flex-direction:column; }
+    .titulo-principal { font-size:26px; font-weight:800; color:#0a4b6e; line-height:1.2; }
+    .subtitulo { font-size:16px; color:#475569; font-weight:500; }
+    .nav-menu { background:white; border-top:1px solid #e2e8f0; padding:12px 0; }
+    .nav-menu .container { display:flex; justify-content:center; }
+    .nav-links { display:flex; gap:32px; list-style:none; flex-wrap:wrap; justify-content:center; }
+    .nav-links a { color:#1e293b; text-decoration:none; font-weight:600; padding:6px 0; border-bottom:2px solid transparent; }
+    .nav-links a:hover, .nav-links a.active { color:#0a4b6e; border-bottom-color:#0a4b6e; }
+    .auth-container { max-width:480px; margin:40px auto; background:white; border-radius:30px; padding:40px; box-shadow:0 10px 25px rgba(0,0,0,0.03); border:1px solid #e2e8f0; flex:1; }
+    .auth-container h2 { font-size:28px; font-weight:700; color:#0a4b6e; margin-bottom:8px; text-align:center; }
+    .auth-container p { color:#64748b; text-align:center; margin-bottom:32px; }
+    .form-group { margin-bottom:20px; display:flex; flex-direction:column; gap:6px; }
+    .form-group label { font-weight:600; font-size:14px; color:#0f172a; }
+    .form-control { padding:14px 18px; border:1px solid #cbd5e1; border-radius:16px; font-size:16px; transition:all 0.2s; width:100%; }
+    .form-control:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.1); outline:none; }
+    .btn-submit { background:#2563eb; color:white; border:none; padding:16px 32px; border-radius:50px; font-weight:700; font-size:18px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; justify-content:center; gap:12px; width:100%; margin-top:16px; }
+    .btn-submit:hover { background:#1d4ed8; transform:scale(1.02); }
+    .auth-links { margin-top:24px; text-align:center; }
+    .auth-links a { color:#2563eb; text-decoration:none; font-weight:600; margin:0 8px; }
+    .auth-links a:hover { text-decoration:underline; }
+    .auth-message { margin-top:20px; padding:12px; border-radius:12px; text-align:center; font-size:14px; }
+    .error-message { background:#fee2e2; color:#b91c1c; }
+    .success-message { background:#dcfce7; color:#166534; }
+    footer { background:#0f172a; color:white; padding:32px 0 24px; margin-top:auto; }
+    .footer-content { display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px; }
+    .footer-contact { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; color:#cbd5e1; }
+    .footer-contact a { color:#cbd5e1; text-decoration:none; display:flex; align-items:center; gap:6px; }
+    .footer-contact a:hover { color:white; }
+    @media (max-width:640px) {
+      .auth-container { padding:30px 20px; }
+      .footer-contact { flex-direction:column; gap:12px; }
+    }
+  </style>
 </head>
 <body>
-  <!-- BARRA DE ACESSIBILIDADE, CABEÇALHO, MENU (igual ao cadastro) -->
-  <!-- ... -->
+  <!-- BARRA DE ACESSIBILIDADE -->
+  <div class="accessibility-bar">
+    <div class="container">
+      <div class="accessibility-links">
+        <a href="#"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
+        <a href="#"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
+        <a href="#"><i class="fas fa-adjust"></i> Alto Contraste</a>
+        <a href="#"><i class="fas fa-hands"></i> Libras</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CABEÇALHO -->
+  <div class="main-header">
+    <div class="container">
+      <div class="logo-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
+        <div class="titulos-prefeitura">
+          <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
+          <span class="subtitulo">Solicitação de Croqui Online</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="nav-menu">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="login.html" class="active">Login</a></li>
+        <li><a href="cadastro.html">Cadastro</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO DE LOGIN -->
   <div class="auth-container">
     <h2>Acessar sua conta</h2>
     <p>Digite seu CPF e senha</p>
+    
     <form id="loginForm">
       <div class="form-group">
         <label>CPF</label>
@@ -24,32 +109,54 @@
         <label>Senha</label>
         <input type="password" id="password" class="form-control" placeholder="••••••••" required>
       </div>
+      
       <button type="submit" class="btn-submit" id="btnEntrar">
         <i class="fas fa-sign-in-alt"></i> Entrar
       </button>
+      
       <div id="loginMessage" class="auth-message"></div>
     </form>
+
     <div class="auth-links">
       <a href="cadastro.html">Cadastre-se</a> |
       <a href="index.html">Voltar</a>
     </div>
   </div>
-  <!-- RODAPÉ (igual) -->
+
+  <!-- RODAPÉ -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-contact">
+          <a href="https://www.botucatu.sp.gov.br" target="_blank"><i class="fas fa-globe"></i> Site oficial</a>
+          <span><i class="fas fa-phone-alt"></i> (14) 3811-1400</span>
+          <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
+        </div>
+        <div style="color:#94a3b8; font-size:13px;">
+          © 2026 – Prefeitura de Botucatu
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
-    function formatCPF(v) {
-      return v.replace(/\D/g, '')
+    // Máscara de CPF
+    function formatCPF(value) {
+      return value.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
         .replace(/(-\d{2})\d+?$/, '$1');
     }
 
-    document.getElementById('cpf').addEventListener('input', (e) => {
+    const cpfInput = document.getElementById('cpf');
+    cpfInput.addEventListener('input', (e) => {
       e.target.value = formatCPF(e.target.value);
     });
 
+    // Submissão
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -79,10 +186,7 @@
           .eq('senha', senha)
           .maybeSingle();
 
-        if (error) {
-          console.error('Erro na consulta:', error);
-          throw new Error('Erro ao verificar credenciais.');
-        }
+        if (error) throw error;
 
         if (!usuario) {
           msgDiv.className = 'auth-message error-message';
@@ -92,7 +196,7 @@
           return;
         }
 
-        // Sucesso! Salva os dados do usuário (ex: localStorage)
+        // Sucesso! Salva os dados do usuário no localStorage
         localStorage.setItem('user', JSON.stringify({
           id: usuario.id,
           cpf: usuario.cpf,
@@ -107,7 +211,7 @@
       } catch (err) {
         console.error(err);
         msgDiv.className = 'auth-message error-message';
-        msgDiv.textContent = err.message || 'Erro ao tentar fazer login. Tente novamente.';
+        msgDiv.textContent = 'Erro ao tentar fazer login. Tente novamente.';
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
       }
