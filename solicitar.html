@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solicitar Croqui - Prefeitura de Botucatu</title>
-  <!-- Importação do Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Importação do Supabase via módulo (mesmo padrão do cadastro/login) -->
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+    window.supabase = supabase; // disponibiliza globalmente se necessário (opcional)
+  </script>
   <style>
-    /* Apenas o mínimo para organização, sem firulas */
+    /* Estilos mínimos para funcionalidade */
     body { font-family: Arial, sans-serif; margin: 20px; }
     .container { max-width: 800px; margin: 0 auto; }
     .sidebar { float: left; width: 200px; margin-right: 20px; }
@@ -30,12 +33,13 @@
   <div class="container">
     <h2>Solicitação de Croqui</h2>
 
-    <!-- Área de verificação de login -->
-    <div id="loginVerification" style="display: none;">
-      <p>Você não está logado. <a href="login.html">Faça login</a> para continuar.</p>
+    <!-- Área de verificação de login (inicialmente oculta, será exibida pelo JS) -->
+    <div id="loginVerification" style="display: none; background: #fee2e2; padding: 20px; border-radius: 8px;">
+      <p style="color: #b91c1c; font-weight: bold;">Você não está logado.</p>
+      <p><a href="login.html" style="background: #2563eb; color: white; padding: 8px 16px; border-radius: 30px; text-decoration: none;">Fazer login</a></p>
     </div>
 
-    <!-- Conteúdo principal (aparece apenas se logado) -->
+    <!-- Conteúdo principal (inicialmente oculto, será exibido se logado) -->
     <div id="mainContent" style="display: none;">
       <!-- Sidebar com dados do munícipe e notificações -->
       <div class="sidebar">
@@ -47,7 +51,6 @@
 
         <h4>Notificações</h4>
         <div id="notificacoes">
-          <!-- Será preenchido dinamicamente -->
           <p>Carregando...</p>
         </div>
       </div>
@@ -55,7 +58,6 @@
       <!-- Formulário de solicitação -->
       <div class="content">
         <form id="solicitacaoForm">
-          <!-- Identificação do imóvel (IPTU) -->
           <div class="form-group">
             <label for="iptu">
               Identificação do imóvel
@@ -67,7 +69,6 @@
             <small>Apenas números, formato XX.XXXX.XXXX</small>
           </div>
 
-          <!-- Documento de posse (upload) -->
           <div class="form-group">
             <label for="documento">
               Documento de posse
@@ -78,19 +79,16 @@
             <input type="file" id="documento" name="documento" accept=".pdf,.jpg,.jpeg,.png" required>
           </div>
 
-          <!-- Quadra (5 dígitos) -->
           <div class="form-group">
             <label for="quadra">Quadra</label>
             <input type="text" id="quadra" name="quadra" maxlength="5" placeholder="Apenas números (máx 5)" required>
           </div>
 
-          <!-- Lote (4 dígitos) -->
           <div class="form-group">
             <label for="lote">Lote</label>
             <input type="text" id="lote" name="lote" maxlength="4" placeholder="Apenas números (máx 4)" required>
           </div>
 
-          <!-- Logradouro -->
           <div class="form-group">
             <label for="logradouro">Logradouro</label>
             <input type="text" id="logradouro" name="logradouro" placeholder="Rua, Avenida, etc." required>
@@ -104,11 +102,10 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
     // ==================== CONFIGURAÇÃO SUPABASE ====================
-    const SUPABASE_URL = 'https://wtgxzswahhwqjuasnrie.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Z3h6c3dhaGh3cWp1YXNucmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3ODI4OTIsImV4cCI6MjA4NjM1ODg5Mn0.E-_oZ3o1517rY5w0e0NMaHiu4L0vLRo6v4-5EwkS3Uk';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Importa o cliente já configurado do seu arquivo central
+    import { supabase } from './js/supabaseClient.js';
 
     // ==================== UTILITÁRIOS ====================
     function formatIPTU(value) {
@@ -118,54 +115,56 @@
         .replace(/(\d{4})\d+?$/, '$1');
     }
 
-    // Aplicar máscara no campo IPTU
-    const iptuField = document.getElementById('iptu');
-    if (iptuField) {
-      iptuField.addEventListener('input', function(e) {
-        e.target.value = formatIPTU(e.target.value);
-      });
-    }
+    // Máscaras - só aplica se os elementos existirem
+    function aplicarMascaras() {
+      const iptuField = document.getElementById('iptu');
+      if (iptuField) {
+        iptuField.addEventListener('input', function(e) {
+          e.target.value = formatIPTU(e.target.value);
+        });
+      }
 
-    // Máscara para quadra (apenas números, max 5)
-    const quadraField = document.getElementById('quadra');
-    if (quadraField) {
-      quadraField.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
-      });
-    }
+      const quadraField = document.getElementById('quadra');
+      if (quadraField) {
+        quadraField.addEventListener('input', function(e) {
+          e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+        });
+      }
 
-    // Máscara para lote (apenas números, max 4)
-    const loteField = document.getElementById('lote');
-    if (loteField) {
-      loteField.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-      });
+      const loteField = document.getElementById('lote');
+      if (loteField) {
+        loteField.addEventListener('input', function(e) {
+          e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+        });
+      }
     }
 
     // ==================== VERIFICAÇÃO DE LOGIN ====================
     function checkLogin() {
       const userStr = localStorage.getItem('user');
+      const loginDiv = document.getElementById('loginVerification');
+      const mainDiv = document.getElementById('mainContent');
+
       if (!userStr) {
-        document.getElementById('loginVerification').style.display = 'block';
-        document.getElementById('mainContent').style.display = 'none';
+        if (loginDiv) loginDiv.style.display = 'block';
+        if (mainDiv) mainDiv.style.display = 'none';
         return null;
       }
       try {
         const user = JSON.parse(userStr);
-        document.getElementById('loginVerification').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+        if (loginDiv) loginDiv.style.display = 'none';
+        if (mainDiv) mainDiv.style.display = 'block';
         return user;
       } catch (e) {
         localStorage.removeItem('user');
-        document.getElementById('loginVerification').style.display = 'block';
-        document.getElementById('mainContent').style.display = 'none';
+        if (loginDiv) loginDiv.style.display = 'block';
+        if (mainDiv) mainDiv.style.display = 'none';
         return null;
       }
     }
 
     // ==================== CARREGAR DADOS DO USUÁRIO ====================
     async function carregarDadosUsuario(user) {
-      // Exibir dados básicos (já estão no localStorage)
       document.getElementById('nomeUsuario').textContent = user.nome || 'Usuário';
       document.getElementById('cpfUsuario').textContent = user.cpf || '';
       
@@ -174,9 +173,9 @@
         .from('municipes')
         .select('email')
         .eq('cpf', user.cpf)
-        .single();
+        .maybeSingle();
       
-      if (data) {
+      if (data && data.email) {
         document.getElementById('emailUsuario').textContent = data.email;
       } else {
         document.getElementById('emailUsuario').textContent = 'Não informado';
@@ -190,7 +189,7 @@
       const { data, error } = await supabase
         .from('croqui_requests')
         .select('*')
-        .eq('user_id', user.id)  // Aqui user.id é o UUID da tabela municipes
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -230,8 +229,8 @@
       msgDiv.style.color = 'red';
       msgDiv.textContent = '';
 
-      // Validações manuais
-      if (!formData.iptu || formData.iptu.length < 12) {
+      // Validações
+      if (!formData.iptu || formData.iptu.replace(/\D/g, '').length < 10) {
         msgDiv.textContent = 'IPTU inválido. Preencha no formato XX.XXXX.XXXX.';
         return;
       }
@@ -247,10 +246,7 @@
         msgDiv.textContent = 'Preencha o logradouro.';
         return;
       }
-
-      // Upload do arquivo
-      const file = formData.documento;
-      if (!file) {
+      if (!formData.documento) {
         msgDiv.textContent = 'Selecione um documento.';
         return;
       }
@@ -260,12 +256,12 @@
       btn.textContent = 'Enviando...';
 
       try {
-        // Nome único para o arquivo
+        const file = formData.documento;
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
         // Upload para o bucket 'documentos'
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('documentos')
           .upload(fileName, file);
 
@@ -320,16 +316,14 @@
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', async () => {
+      aplicarMascaras();
+
       const user = checkLogin();
       if (!user) return;
 
-      // Carregar dados do usuário
       await carregarDadosUsuario(user);
-      
-      // Carregar notificações
       await carregarNotificacoes(user);
 
-      // Evento de submit do formulário
       document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -339,14 +333,7 @@
         const logradouro = document.getElementById('logradouro').value.trim();
         const documento = document.getElementById('documento').files[0];
 
-        const formData = {
-          iptu,
-          quadra,
-          lote,
-          logradouro,
-          documento
-        };
-
+        const formData = { iptu, quadra, lote, logradouro, documento };
         await enviarSolicitacao(user, formData);
       });
     });
