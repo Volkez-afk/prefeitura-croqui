@@ -132,7 +132,6 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_uMEfaVJdfXEt264vEZVrFA_GoJDC1gk';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Máscara de CPF
     function formatCPF(value) {
       return value.replace(/\D/g, '')
         .replace(/(\d{3})(\d)/, '$1.$2')
@@ -166,7 +165,6 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
 
-        // 1. Buscar o munícipe pelo CPF
         const { data: municipe, error: searchError } = await supabase
           .from('municipes')
           .select('email, user_id')
@@ -174,21 +172,27 @@
           .maybeSingle();
 
         if (searchError) throw searchError;
+
         if (!municipe) {
           msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'CPF não cadastrado.';
+          msgDiv.textContent = 'Usuário não cadastrado!';
           btn.disabled = false;
           btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
           return;
         }
 
-        // 2. Fazer login com o e-mail associado
         const { data, error: loginError } = await supabase.auth.signInWithPassword({
           email: municipe.email,
           password: password
         });
 
-        if (loginError) throw loginError;
+        if (loginError) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Usuário não cadastrado!';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+          return;
+        }
 
         msgDiv.className = 'auth-message success-message';
         msgDiv.textContent = 'Login efetuado! Redirecionando...';
@@ -198,7 +202,7 @@
       } catch (error) {
         console.error(error);
         msgDiv.className = 'auth-message error-message';
-        msgDiv.textContent = 'CPF ou senha incorretos.';
+        msgDiv.textContent = 'Usuário não cadastrado!';
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
       }
