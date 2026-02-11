@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sabesp/CPFL - Croquis Oficiais</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>Croquis Oficiais para Ligação</h2>
+      <button id="logoutBtn" class="btn logout-btn">Sair</button>
+    </div>
+    
+    <div id="requestsList"></div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js'
+    import { logout, checkRole } from './js/auth.js'
+
+    if (!await checkRole(['sabesp_cpfl'])) {
+      window.location.href = 'login.html'
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', logout)
+
+    async function loadForwardedRequests() {
+      const { data, error } = await supabase
+        .from('croqui_requests')
+        .select('*')
+        .eq('status', 'forwarded')
+        .eq('croqui_type', 'oficial')
+        .order('forwarded_at', { ascending: false })
+
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      const listDiv = document.getElementById('requestsList')
+      if (data.length === 0) {
+        listDiv.innerHTML = '<p>Nenhum croqui oficial aguardando ligação.</p>'
+        return
+      }
+
+      let html = '<table class="table"><thead><tr><th>ID</th><th>Nome</th><th>Endereço</th><th>Encaminhado em</th><th>Observações</th></tr></thead><tbody>'
+      
+      data.forEach(req => {
+        html += `<tr>
+          <td>${req.id}</td>
+          <td>${req.name}</td>
+          <td>${req.address}</td>
+          <td>${new Date(req.forwarded_at).toLocaleDateString('pt-BR')}</td>
+          <td>${req.server_notes || '-'}</td>
+        </tr>`
+      })
+      
+      html += '</tbody></table>'
+      listDiv.innerHTML = html
+    }
+
+    loadForwardedRequests()
+  </script>
+</body>
+</html>
