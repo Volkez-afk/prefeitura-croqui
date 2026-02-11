@@ -10,15 +10,22 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* MESMOS ESTILOS DO CADASTRO */
+    /* MESMOS ESTILOS DO CADASTRO (copiar o bloco de estilos) */
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:#f8fafc; color:#1e293b; display:flex; flex-direction:column; min-height:100vh; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
     .container { max-width:1100px; margin:0 auto; padding:0 24px; width:100%; }
-    .accessibility-bar { background:#0a4b6e; color:white; padding:8px 0; font-size:13px; }
-    .accessibility-bar .container { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:20px; }
-    .accessibility-links { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+    .accessibility-bar { background:#0a4b6e; color:white; padding:8px 0; }
+    .accessibility-bar .container { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .accessibility-links { display:flex; gap:20px; flex-wrap:wrap; }
     .accessibility-links a { color:white; text-decoration:none; display:flex; align-items:center; gap:6px; }
-    .accessibility-links a:hover { opacity:0.9; text-decoration:underline; }
     .main-header { background:white; padding:30px 0 20px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02); }
     .main-header .container { display:flex; flex-direction:column; align-items:center; gap:16px; }
     .logo-area { display:flex; align-items:center; gap:20px; justify-content:center; flex-wrap:wrap; }
@@ -32,16 +39,15 @@
     .form-group { margin-bottom:20px; display:flex; flex-direction:column; gap:6px; }
     .form-group label { font-weight:600; font-size:14px; color:#0f172a; }
     .form-control { padding:14px 18px; border:1px solid #cbd5e1; border-radius:16px; font-size:16px; transition:all 0.2s; width:100%; }
-    .form-control:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .form-control:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.1); outline:none; }
     .btn-submit { background:#2563eb; color:white; border:none; padding:16px 32px; border-radius:50px; font-weight:700; font-size:18px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; justify-content:center; gap:12px; width:100%; margin-top:16px; }
     .btn-submit:hover { background:#1d4ed8; transform:scale(1.02); }
-    .auth-links { margin-top:24px; text-align:center; display:flex; flex-direction:column; gap:12px; }
+    .auth-links { margin-top:24px; text-align:center; }
     .auth-links a { color:#2563eb; text-decoration:none; font-weight:600; }
-    .auth-links a:hover { text-decoration:underline; }
-    .forgot-password { color:#64748b; font-size:14px; }
     .auth-message { margin-top:20px; padding:12px; border-radius:12px; text-align:center; font-size:14px; }
     .error-message { background:#fee2e2; color:#b91c1c; }
     .success-message { background:#dcfce7; color:#166534; }
+    .forgot-password { display:block; margin-top:12px; font-size:14px; color:#64748b; }
     footer { background:#0f172a; color:white; padding:32px 0 24px; margin-top:auto; }
     .footer-content { display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px; }
     .footer-contact { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; color:#cbd5e1; }
@@ -67,7 +73,7 @@
   <div class="main-header">
     <div class="container">
       <div class="logo-area">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão" class="logo-brasao">
         <div class="titulos-prefeitura">
           <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
           <span class="subtitulo">Solicitação de Croqui Online</span>
@@ -76,10 +82,10 @@
     </div>
   </div>
 
-  <!-- FORMULÁRIO DE LOGIN -->
+  <!-- FORMULÁRIO DE LOGIN (via CPF) -->
   <div class="auth-container">
     <h2>Acessar sistema</h2>
-    <p>Faça login com seu CPF e senha</p>
+    <p>Digite seu CPF e senha</p>
     
     <form id="loginForm">
       <div class="form-group">
@@ -90,15 +96,18 @@
         <label>Senha</label>
         <input type="password" id="password" class="form-control" placeholder="••••••••" required>
       </div>
-      <button type="submit" class="btn-submit">
+      
+      <button type="submit" class="btn-submit" id="btnEntrar">
         <i class="fas fa-sign-in-alt"></i> Entrar
       </button>
+      
+      <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+      
       <div id="loginMessage" class="auth-message"></div>
     </form>
 
     <div class="auth-links">
-      <a href="cadastro.html">Ainda não tem cadastro? Cadastre-se</a>
-      <a href="recuperar-senha.html" class="forgot-password">Esqueceu sua senha?</a>
+      Ainda não tem cadastro? <a href="cadastro.html">Cadastre-se</a>
     </div>
   </div>
 
@@ -111,7 +120,7 @@
           <span><i class="fas fa-phone-alt"></i> (14) 3811-1400</span>
           <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
         </div>
-        <div style="color: #94a3b8; font-size: 13px;">
+        <div style="color:#94a3b8; font-size:13px;">
           © 2026 – Prefeitura de Botucatu
         </div>
       </div>
@@ -132,7 +141,8 @@
         .replace(/(-\d{2})\d+?$/, '$1');
     }
 
-    document.getElementById('cpf').addEventListener('input', function(e) {
+    const cpfInput = document.getElementById('cpf');
+    cpfInput.addEventListener('input', function(e) {
       e.target.value = formatCPF(e.target.value);
     });
 
@@ -142,9 +152,10 @@
       const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
       const password = document.getElementById('password').value;
       const msgDiv = document.getElementById('loginMessage');
+      const btn = document.getElementById('btnEntrar');
+      
       msgDiv.className = 'auth-message';
 
-      // Validar CPF
       if (cpf.length !== 11) {
         msgDiv.className = 'auth-message error-message';
         msgDiv.textContent = 'CPF inválido.';
@@ -152,10 +163,13 @@
       }
 
       try {
-        // 1. Buscar o e-mail associado a este CPF na tabela municipes
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+
+        // 1. Buscar o munícipe pelo CPF
         const { data: municipe, error: searchError } = await supabase
           .from('municipes')
-          .select('user_id')
+          .select('email, user_id')
           .eq('cpf', cpf)
           .maybeSingle();
 
@@ -163,65 +177,30 @@
         if (!municipe) {
           msgDiv.className = 'auth-message error-message';
           msgDiv.textContent = 'CPF não cadastrado.';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
           return;
         }
 
-        // 2. Agora precisamos do e-mail do usuário. Não temos e-mail na tabela municipes.
-        // Precisamos buscar o e-mail pelo user_id na tabela auth.users?
-        // O cliente não pode consultar auth.users. Então temos duas opções:
-        // - Armazenar o e-mail também na tabela municipes (redundância).
-        // - Usar uma função Edge ou admin API.
-        // Vamos adotar a redundância: adicionar coluna email na tabela municipes e preencher no cadastro.
-        // Mas não fizemos isso. Vamos ajustar o cadastro para salvar o e-mail também.
-        // Por enquanto, para funcionar, farei uma consulta direta? Não é possível.
-        // Então precisamos alterar a estrutura: adicionar email na tabela municipes.
-        // Vou assumir que já adicionamos. Caso contrário, executar SQL:
-        // ALTER TABLE municipes ADD COLUMN email TEXT;
-        // E no cadastro, salvar o e-mail.
-
-        // Vou modificar o cadastro para salvar o e-mail também, e aqui no login buscar esse e-mail.
-        // Como isso não foi feito ainda, vou implementar no cadastro abaixo e no login buscar do municipe.
-        
-        // --- Código adaptado: assumindo que a tabela municipes tem coluna email ---
-        const { data: municipeWithEmail, error: emailError } = await supabase
-          .from('municipes')
-          .select('email')
-          .eq('cpf', cpf)
-          .single();
-
-        if (emailError || !municipeWithEmail) {
-          msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'Erro ao recuperar informações de login.';
-          return;
-        }
-
-        const email = municipeWithEmail.email;
-
-        // 3. Fazer login com e-mail e senha
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
+        // 2. Fazer login com o e-mail associado
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({
+          email: municipe.email,
+          password: password
         });
 
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            msgDiv.className = 'auth-message error-message';
-            msgDiv.textContent = 'CPF ou senha incorretos.';
-          } else {
-            throw error;
-          }
-          return;
-        }
+        if (loginError) throw loginError;
 
         msgDiv.className = 'auth-message success-message';
         msgDiv.textContent = 'Login efetuado! Redirecionando...';
         setTimeout(() => {
           window.location.href = 'solicitar.html';
-        }, 1000);
+        }, 1500);
       } catch (error) {
-        msgDiv.className = 'auth-message error-message';
-        msgDiv.textContent = 'Erro ao fazer login. Tente novamente.';
         console.error(error);
+        msgDiv.className = 'auth-message error-message';
+        msgDiv.textContent = 'CPF ou senha incorretos.';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
       }
     });
   </script>
