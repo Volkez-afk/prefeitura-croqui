@@ -12,13 +12,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* RESET E VARIÁVEIS */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    /* ========== RESET E VARIÁVEIS ========== */
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f8fafc;
@@ -28,22 +23,15 @@
       flex-direction: column;
       min-height: 100vh;
     }
+    .container { max-width:1100px; margin:0 auto; padding:0 24px; width:100%; }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-      width: 100%;
-    }
-
-    /* --- BARRA DE ACESSIBILIDADE (simplificada) --- */
+    /* ========== BARRA DE ACESSIBILIDADE ========== */
     .accessibility-bar {
       background-color: #0a4b6e;
       color: white;
       padding: 8px 0;
       font-size: 13px;
     }
-
     .accessibility-bar .container {
       display: flex;
       justify-content: center;
@@ -51,14 +39,12 @@
       flex-wrap: wrap;
       gap: 20px;
     }
-
     .accessibility-links {
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .accessibility-links a {
       color: white;
       text-decoration: none;
@@ -67,27 +53,24 @@
       gap: 6px;
       transition: opacity 0.2s;
     }
-
     .accessibility-links a:hover {
       opacity: 0.9;
       text-decoration: underline;
     }
 
-    /* --- HEADER PRINCIPAL (centralizado) --- */
+    /* ========== CABEÇALHO PRINCIPAL ========== */
     .main-header {
       background-color: white;
       padding: 30px 0 20px;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-
     .main-header .container {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 16px;
     }
-
     .logo-area {
       display: flex;
       align-items: center;
@@ -95,43 +78,37 @@
       justify-content: center;
       flex-wrap: wrap;
     }
-
     .logo-brasao {
       width: 80px;
       height: 80px;
       object-fit: contain;
     }
-
     .titulos-prefeitura {
       display: flex;
       flex-direction: column;
     }
-
     .titulo-principal {
       font-size: 26px;
       font-weight: 800;
       color: #0a4b6e;
       line-height: 1.2;
     }
-
     .subtitulo {
       font-size: 16px;
       color: #475569;
       font-weight: 500;
     }
 
-    /* --- MENU (simples, opcional) --- */
+    /* ========== MENU DE NAVEGAÇÃO ========== */
     .nav-menu {
       background-color: white;
       border-top: 1px solid #e2e8f0;
       padding: 12px 0;
     }
-
     .nav-menu .container {
       display: flex;
       justify-content: center;
     }
-
     .nav-links {
       display: flex;
       list-style: none;
@@ -139,7 +116,6 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .nav-links a {
       color: #1e293b;
       text-decoration: none;
@@ -149,14 +125,13 @@
       border-bottom: 2px solid transparent;
       transition: 0.2s;
     }
-
     .nav-links a:hover,
     .nav-links a.active {
       color: #0a4b6e;
       border-bottom-color: #0a4b6e;
     }
 
-    /* --- HERO – SOLICITAÇÃO DE CROQUI (CENTRALIZADO) --- */
+    /* ========== HERO – SOLICITAÇÃO DE CROQUI ========== */
     .hero-servico {
       padding: 60px 0 40px;
       background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 100%);
@@ -164,13 +139,11 @@
       display: flex;
       align-items: center;
     }
-
     .hero-content {
       text-align: center;
       max-width: 800px;
       margin: 0 auto;
     }
-
     .badge {
       display: inline-block;
       background-color: #dcfce7;
@@ -181,7 +154,6 @@
       font-size: 15px;
       margin-bottom: 24px;
     }
-
     .hero-content h1 {
       font-size: 44px;
       font-weight: 800;
@@ -189,7 +161,6 @@
       margin-bottom: 16px;
       line-height: 1.2;
     }
-
     .hero-description {
       font-size: 20px;
       color: #334155;
@@ -197,7 +168,7 @@
       line-height: 1.6;
     }
 
-    /* BOTÃO GRANDE, CENTRALIZADO, AZUL MAIS CLARO (#2563eb) */
+    /* ----- BOTÃO PRINCIPAL (SOLICITAR CROQUI) ----- */
     .btn-solicitar-grande {
       display: inline-flex;
       align-items: center;
@@ -216,17 +187,11 @@
       border: none;
       letter-spacing: 1px;
     }
-
     .btn-solicitar-grande:hover {
       background-color: #1d4ed8;
       transform: scale(1.02);
       box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.5);
     }
-
-    .btn-solicitar-grande i {
-      font-size: 28px;
-    }
-
     .info-urgente {
       display: flex;
       align-items: center;
@@ -236,17 +201,13 @@
       font-size: 16px;
       margin-top: 8px;
     }
+    .info-urgente i { color: #0a4b6e; }
 
-    .info-urgente i {
-      color: #0a4b6e;
-    }
-
-    /* --- CARDS DE ACESSO POR PERFIL (centralizados) --- */
+    /* ========== CARDS DE ACESSO POR PERFIL ========== */
     .acesso-rapido-section {
       padding: 40px 0 60px;
       background-color: white;
     }
-
     .section-title {
       text-align: center;
       font-size: 28px;
@@ -254,21 +215,18 @@
       color: #0a4b6e;
       margin-bottom: 8px;
     }
-
     .section-subtitle {
       text-align: center;
       color: #64748b;
       font-size: 18px;
       margin-bottom: 40px;
     }
-
     .card-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 30px;
     }
-
     .perfil-card {
       background-color: white;
       border-radius: 20px;
@@ -284,13 +242,11 @@
       align-items: center;
       width: 280px;
     }
-
     .perfil-card:hover {
       transform: translateY(-6px);
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
       border-color: #94a3b8;
     }
-
     .card-icon {
       width: 72px;
       height: 72px;
@@ -303,134 +259,63 @@
       font-size: 32px;
       margin-bottom: 20px;
     }
-
     .perfil-card h3 {
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 10px;
       color: #0f172a;
     }
-
     .perfil-card p {
       color: #475569;
       font-size: 15px;
       line-height: 1.6;
     }
 
-    /* --- RODAPÉ ENXUTO, CENTRALIZADO --- */
+    /* ========== RODAPÉ ========== */
     footer {
       background-color: #0f172a;
       color: white;
-      padding: 40px 0 24px;
+      padding: 32px 0 24px;
       margin-top: auto;
     }
-
     .footer-content {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 24px;
+      gap: 20px;
     }
-
-    .footer-info h3 {
-      color: white;
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
     .footer-contact {
       display: flex;
+      gap: 24px;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 24px;
       color: #cbd5e1;
-      font-size: 16px;
     }
-
     .footer-contact a {
       color: #cbd5e1;
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: color 0.2s;
-    }
-
-    .footer-contact a:hover {
-      color: white;
-      text-decoration: underline;
-    }
-
-    .footer-links {
       display: flex;
-      gap: 32px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .footer-links a {
-      color: #94a3b8;
-      text-decoration: none;
-      font-size: 15px;
-      transition: color 0.2s;
-    }
-
-    .footer-links a:hover {
-      color: white;
-    }
-
-    .site-oficial {
-      background-color: #1e293b;
-      padding: 12px 28px;
-      border-radius: 40px;
-      font-weight: 600;
-      display: inline-flex;
       align-items: center;
-      gap: 10px;
-      color: white;
-      text-decoration: none;
-      margin-top: 8px;
-      transition: background 0.2s;
+      gap: 6px;
     }
-
-    .site-oficial:hover {
-      background-color: #2563eb;
-    }
-
+    .footer-contact a:hover { color: white; }
     .footer-bottom {
-      border-top: 1px solid #1e293b;
-      margin-top: 32px;
-      padding-top: 24px;
-      text-align: center;
       color: #94a3b8;
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    /* RESPONSIVIDADE */
+    /* ========== RESPONSIVIDADE ========== */
     @media (max-width: 640px) {
-      .hero-content h1 {
-        font-size: 34px;
-      }
-      .btn-solicitar-grande {
-        font-size: 22px;
-        padding: 18px 40px;
-      }
-      .card-grid {
-        flex-direction: column;
-        align-items: center;
-      }
-      .footer-contact {
-        flex-direction: column;
-        gap: 12px;
-      }
+      .hero-content h1 { font-size: 34px; }
+      .btn-solicitar-grande { font-size: 22px; padding: 18px 40px; }
+      .card-grid { flex-direction: column; align-items: center; }
+      .footer-contact { flex-direction: column; gap: 12px; }
     }
   </style>
 </head>
 <body>
-  <!-- BARRA DE ACESSIBILIDADE (simples, centralizada) -->
+  <!-- BARRA DE ACESSIBILIDADE -->
   <div class="accessibility-bar">
     <div class="container">
       <div class="accessibility-links">
@@ -443,7 +328,7 @@
     </div>
   </div>
 
-  <!-- CABEÇALHO PRINCIPAL CENTRALIZADO -->
+  <!-- CABEÇALHO -->
   <div class="main-header">
     <div class="container">
       <div class="logo-area">
@@ -456,7 +341,7 @@
     </div>
   </div>
 
-  <!-- MENU PRINCIPAL (simples, centralizado) -->
+  <!-- MENU -->
   <div class="nav-menu">
     <div class="container">
       <ul class="nav-links">
@@ -468,7 +353,7 @@
     </div>
   </div>
 
-  <!-- HERO – EXCLUSIVO PARA SOLICITAÇÃO DE CROQUI -->
+  <!-- HERO – SOLICITAÇÃO DE CROQUI (MUNÍCIPE) -->
   <div class="hero-servico">
     <div class="container">
       <div class="hero-content">
@@ -478,7 +363,7 @@
           Solicite agora o croqui para atribuição de número oficial do seu imóvel.<br>
           Agilidade, transparência e acompanhamento online.
         </p>
-        <!-- BOTÃO GIGANTE CENTRALIZADO -->
+        <!-- ✅ CORRETO: Encaminha para login do munícipe -->
         <a href="login.html" class="btn-solicitar-grande">
           <i class="fas fa-file-signature"></i> SOLICITAR CROQUI
         </a>
@@ -489,31 +374,33 @@
     </div>
   </div>
 
-  <!-- ACESSO POR PERFIL (cards centralizados) -->
+  <!-- ACESSO POR PERFIL (CARDS) -->
   <div class="acesso-rapido-section">
     <div class="container">
       <h2 class="section-title">Acesso por Perfil</h2>
       <p class="section-subtitle">Área restrita para servidores, administradores e concessionárias</p>
       
       <div class="card-grid">
-        <!-- Servidor -->
-        <a href="login.html" class="perfil-card">
+        <!-- ✅ SERVIDOR → servidor-login.html (a criar) -->
+        <a href="servidor-login.html" class="perfil-card">
           <div class="card-icon">
             <i class="fas fa-user-tie"></i>
           </div>
           <h3>Servidor</h3>
           <p>Análise, aprovação e encaminhamento de croquis oficiais.</p>
         </a>
-        <!-- Administrador -->
-        <a href="login.html" class="perfil-card">
+
+        <!-- ✅ ADMINISTRADOR → admin-login.html (já criamos) -->
+        <a href="admin-login.html" class="perfil-card">
           <div class="card-icon">
             <i class="fas fa-user-cog"></i>
           </div>
           <h3>Administrador</h3>
           <p>Gestão de usuários e permissões do sistema.</p>
         </a>
-        <!-- SABESP / CPFL -->
-        <a href="login.html" class="perfil-card">
+
+        <!-- ✅ SABESP / CPFL → concess-login.html (a criar) -->
+        <a href="concess-login.html" class="perfil-card">
           <div class="card-icon">
             <i class="fas fa-tint"></i>
           </div>
@@ -524,43 +411,19 @@
     </div>
   </div>
 
-  <!-- RODAPÉ ENXUTO, CENTRALIZADO, COM LINK OFICIAL -->
+  <!-- RODAPÉ -->
   <footer>
     <div class="container">
       <div class="footer-content">
-        <div class="footer-info">
-          <h3>Prefeitura Municipal de Botucatu</h3>
-          <div class="footer-contact">
-            <a href="https://www.botucatu.sp.gov.br" target="_blank" rel="noopener noreferrer">
-              <i class="fas fa-globe"></i> www.botucatu.sp.gov.br
-            </a>
-            <a href="tel:1438111400">
-              <i class="fas fa-phone-alt"></i> (14) 3811-1400
-            </a>
-            <a href="mailto:gabinete@botucatu.sp.gov.br">
-              <i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br
-            </a>
-            <span>
-              <i class="fas fa-clock"></i> 08h às 16h30
-            </span>
-          </div>
+        <div class="footer-contact">
+          <a href="https://www.botucatu.sp.gov.br" target="_blank"><i class="fas fa-globe"></i> Site oficial</a>
+          <span><i class="fas fa-phone-alt"></i> (14) 3811-1400</span>
+          <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
+          <span><i class="fas fa-clock"></i> Segunda a sexta, 08h às 16h30</span>
         </div>
-        
-        <div class="footer-links">
-          <a href="#">Acessibilidade</a>
-          <a href="#">Política de Privacidade</a>
-          <a href="#">Ouvidoria</a>
-          <a href="#">Transparência</a>
+        <div class="footer-bottom">
+          © 2026 – Prefeitura Municipal de Botucatu
         </div>
-
-        <a href="https://www.botucatu.sp.gov.br" target="_blank" rel="noopener noreferrer" class="site-oficial">
-          <i class="fas fa-external-link-alt"></i> ACESSAR PORTAL OFICIAL
-        </a>
-      </div>
-      
-      <div class="footer-bottom">
-        <p>© 2026 Prefeitura Municipal de Botucatu. Todos os direitos reservados.</p>
-        <p style="margin-top: 6px;">Sistema de Solicitação de Croqui – Versão 1.0</p>
       </div>
     </div>
   </footer>
