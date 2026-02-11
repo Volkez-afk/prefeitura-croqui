@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Cadastro - Versão Funcional</title>
+  <title>Cadastro - Prefeitura de Botucatu</title>
 </head>
 <body>
   <h2>Criar sua conta</h2>
@@ -23,9 +23,12 @@
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
-    // === Utilitários CPF ===
     function formatCPF(v) {
-      return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2').replace(/(-\d{2})\d+?$/, '$1');
+      return v.replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+        .replace(/(-\d{2})\d+?$/, '$1');
     }
     function isValidCPF(c) {
       c = c.replace(/\D/g, '');
@@ -42,7 +45,6 @@
       e.target.value = formatCPF(e.target.value);
     });
 
-    // === Submissão ===
     document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -59,7 +61,6 @@
       msgDiv.style.color = 'red';
       msgDiv.textContent = '';
 
-      // Validações
       if (!isValidCPF(cpf)) { msgDiv.textContent = 'CPF inválido.'; return; }
       if (senha !== senhaConfirm) { msgDiv.textContent = 'Senhas não coincidem.'; return; }
       if (senha.length < 6) { msgDiv.textContent = 'Senha deve ter no mínimo 6 caracteres.'; return; }
@@ -69,38 +70,37 @@
       btn.textContent = 'Cadastrando...';
 
       try {
-        // 1. Verificar CPF duplicado
+        // 1. Verificar CPF duplicado – usando o nome correto da tabela: munícipes
         const { data: existente, error: errCpf } = await supabase
-          .from('municipes')
+          .from('munícipes')   // ← CORRIGIDO: com acento
           .select('cpf')
           .eq('cpf', cpf)
           .maybeSingle();
         if (errCpf) throw errCpf;
         if (existente) {
           msgDiv.textContent = 'CPF já cadastrado.';
-          btn.disabled = false; btn.textContent = 'Cadastrar'; return;
+          btn.disabled = false; btn.textContent = 'Cadastrar';
+          return;
         }
 
         // 2. Criar usuário no Auth
         const { data: authData, error: errAuth } = await supabase.auth.signUp({
-          email, password: senha
+          email,
+          password: senha
         });
         if (errAuth) throw errAuth;
         if (!authData.user) throw new Error('Falha ao criar usuário');
 
-        // 3. **AGUARDAR A SESSÃO SER ESTABELECIDA** 
-        //    Às vezes o signUp já loga, mas garantimos:
-        let tentativas = 0;
-        while (tentativas < 5) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && user.id === authData.user.id) break;
-          await new Promise(res => setTimeout(res, 200));
-          tentativas++;
-        }
+        // 3. Fazer login imediato para garantir autenticação
+        const { error: errSignIn } = await supabase.auth.signInWithPassword({
+          email,
+          password: senha
+        });
+        if (errSignIn) throw errSignIn;
 
-        // 4. Inserir na tabela municipes (agora com o usuário autenticado)
+        // 4. Inserir na tabela munícipes – nome corrigido
         const { error: errInsert } = await supabase
-          .from('municipes')
+          .from('munícipes')   // ← CORRIGIDO: com acento
           .insert([{
             user_id: authData.user.id,
             email: email,
@@ -112,14 +112,13 @@
           }]);
         if (errInsert) throw errInsert;
 
-        // Sucesso!
         msgDiv.style.color = 'green';
-        msgDiv.textContent = 'Cadastro realizado! Redirecionando...';
+        msgDiv.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
         setTimeout(() => { window.location.href = 'login.html'; }, 2000);
       } catch (error) {
-        console.error(error);
+        console.error('Erro detalhado:', error);
         msgDiv.style.color = 'red';
-        msgDiv.textContent = error.message || 'Erro ao cadastrar.';
+        msgDiv.textContent = error.message || 'Erro ao cadastrar. Tente novamente.';
         btn.disabled = false;
         btn.textContent = 'Cadastrar';
       }
