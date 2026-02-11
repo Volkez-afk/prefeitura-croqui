@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -34,7 +35,7 @@
     .subtitulo { font-size: 16px; color: #475569; font-weight: 500; }
     .auth-container { max-width: 600px; margin: 40px auto; background: white; border-radius: 30px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; flex: 1; }
     .auth-container h2 { font-size: 28px; font-weight: 700; color: #0a4b6e; margin-bottom: 8px; text-align: center; }
-    .auth-container p { color: #64748b; text-align: center; margin-bottom: 32px; }
+    .auth-container > p { color: #64748b; text-align: center; margin-bottom: 32px; }
     .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-weight: 600; font-size: 14px; color: #0f172a; }
     .form-group label .optional { font-weight: 400; color: #64748b; font-size: 12px; margin-left: 6px; }
@@ -59,8 +60,6 @@
     .footer-contact { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; color: #cbd5e1; }
     .footer-contact a { color: #cbd5e1; text-decoration: none; display: flex; align-items: center; gap: 6px; }
     .footer-contact a:hover { color: white; }
-    .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 640px) { .auth-container { padding: 30px 20px; margin: 20px 16px; } }
   </style>
 </head>
@@ -69,9 +68,9 @@
   <div class="accessibility-bar">
     <div class="container">
       <div class="accessibility-links">
-        <a onclick="changeFontSize(1)"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
-        <a onclick="changeFontSize(-1)"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
-        <a onclick="toggleContrast()"><i class="fas fa-adjust"></i> Alto Contraste</a>
+        <a href__="#"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
+        <a href__="#"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
+        <a href__="#"><i class="fas fa-adjust"></i> Alto Contraste</a>
         <a href__="#"><i class="fas fa-hands"></i> Libras</a>
       </div>
     </div>
@@ -94,7 +93,7 @@
   <main class="auth-container">
     <h2>Criar sua conta</h2>
     <p>Preencha seus dados para se cadastrar</p>
-    
+
     <form id="cadastroForm" novalidate>
       <div class="form-group">
         <label for="email">E-mail</label>
@@ -118,7 +117,7 @@
       <div class="form-group">
         <label for="passwordConfirm">Confirmar senha</label>
         <input type="password" id="passwordConfirm" class="form-control" placeholder="••••••••" minlength="6" required>
-        <span class="field-error" id="passwordMatchError">As senhas não coincidem</span>
+        <span class="field-error" id="passwordConfirmError">As senhas não coincidem</span>
       </div>
 
       <div class="form-group">
@@ -173,48 +172,15 @@
 
   <script>
     // ==================== CONFIGURAÇÃO SUPABASE ====================
-    // IMPORTANTE: Substitua pela sua chave anônima real do Supabase
     const SUPABASE_URL = 'https://wtgxzswahhwqjuasnrie.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Z3h6c3dhaGh3cWp1YXNucmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3ODI4OTIsImV4cCI6MjA4NjM1ODg5Mn0.E-_oZ3o1517rY5w0e0NMaHiu4L0vLRo6v4-5EwkS3Uk'; // Pegue em: Supabase Dashboard > Settings > API > anon public
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Z3h6c3dhaGh3cWp1YXNucmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3ODI4OTIsImV4cCI6MjA4NjM1ODg5Mn0.E-_oZ3o1517rY5w0e0NMaHiu4L0vLRo6v4-5EwkS3Uk';
     
-    let supabase = null;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (error) {
-      console.error('Erro ao conectar com Supabase:', error);
-    }
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ==================== ELEMENTOS DO DOM ====================
     const form = document.getElementById('cadastroForm');
     const btnCadastrar = document.getElementById('btnCadastrar');
     const messageDiv = document.getElementById('cadastroMessage');
-
-    const emailInput = document.getElementById('email');
-    const cpfInput = document.getElementById('cpf');
-    const passwordInput = document.getElementById('password');
-    const passwordConfirmInput = document.getElementById('passwordConfirm');
-    const nomeInput = document.getElementById('nome');
-    const paiInput = document.getElementById('pai');
-    const maeInput = document.getElementById('mae');
-    const celularInput = document.getElementById('celular');
-
-    // ==================== FUNÇÕES DE ACESSIBILIDADE ====================
-    let currentFontSize = 16;
-    function changeFontSize(delta) {
-      currentFontSize = Math.min(24, Math.max(12, currentFontSize + delta));
-      document.body.style.fontSize = currentFontSize + 'px';
-    }
-
-    function toggleContrast() {
-      document.body.classList.toggle('high-contrast');
-      if (document.body.classList.contains('high-contrast')) {
-        document.body.style.background = '#000';
-        document.body.style.color = '#fff';
-      } else {
-        document.body.style.background = '#f8fafc';
-        document.body.style.color = '#1e293b';
-      }
-    }
 
     // ==================== FUNÇÕES DE MÁSCARA ====================
     function formatCPF(value) {
@@ -236,30 +202,21 @@
 
     // ==================== FUNÇÕES DE VALIDAÇÃO ====================
     function isValidEmail(email) {
-      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return regex.test(email);
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
     function isValidCPF(cpf) {
       cpf = cpf.replace(/\D/g, '');
-      
-      if (cpf.length !== 11) return false;
-      if (/^(\d)\1{10}$/.test(cpf)) return false;
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
 
-      // Validação do primeiro dígito verificador
       let sum = 0;
-      for (let i = 0; i < 9; i++) {
-        sum += parseInt(cpf.charAt(i)) * (10 - i);
-      }
+      for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
       let remainder = (sum * 10) % 11;
       if (remainder === 10 || remainder === 11) remainder = 0;
       if (remainder !== parseInt(cpf.charAt(9))) return false;
 
-      // Validação do segundo dígito verificador
       sum = 0;
-      for (let i = 0; i < 10; i++) {
-        sum += parseInt(cpf.charAt(i)) * (11 - i);
-      }
+      for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
       remainder = (sum * 10) % 11;
       if (remainder === 10 || remainder === 11) remainder = 0;
       if (remainder !== parseInt(cpf.charAt(10))) return false;
@@ -268,102 +225,42 @@
     }
 
     function isValidCelular(celular) {
-      const numbers = celular.replace(/\D/g, '');
-      return numbers.length === 11;
+      return celular.replace(/\D/g, '').length === 11;
     }
 
-    function showFieldError(inputId, show = true) {
-      const input = document.getElementById(inputId);
-      const errorSpan = document.getElementById(inputId + 'Error');
-      
-      if (input) {
-        input.classList.toggle('error', show);
-      }
-      if (errorSpan) {
-        errorSpan.classList.toggle('show', show);
-      }
+    function showFieldError(fieldId, show = true) {
+      const input = document.getElementById(fieldId);
+      const error = document.getElementById(fieldId + 'Error');
+      if (input) input.classList.toggle('error', show);
+      if (error) error.classList.toggle('show', show);
     }
 
     function validateForm() {
-      let isValid = true;
+      let valid = true;
+      const email = document.getElementById('email').value.trim();
+      const cpf = document.getElementById('cpf').value;
+      const password = document.getElementById('password').value;
+      const passwordConfirm = document.getElementById('passwordConfirm').value;
+      const nome = document.getElementById('nome').value.trim();
+      const celular = document.getElementById('celular').value;
 
-      // Validar email
-      if (!isValidEmail(emailInput.value.trim())) {
-        showFieldError('email', true);
-        isValid = false;
-      } else {
-        showFieldError('email', false);
-      }
+      if (!isValidEmail(email)) { showFieldError('email', true); valid = false; } else { showFieldError('email', false); }
+      if (!isValidCPF(cpf)) { showFieldError('cpf', true); valid = false; } else { showFieldError('cpf', false); }
+      if (password.length < 6) { showFieldError('password', true); valid = false; } else { showFieldError('password', false); }
+      if (password !== passwordConfirm) { showFieldError('passwordConfirm', true); valid = false; } else { showFieldError('passwordConfirm', false); }
+      if (nome.length < 3) { showFieldError('nome', true); valid = false; } else { showFieldError('nome', false); }
+      if (!isValidCelular(celular)) { showFieldError('celular', true); valid = false; } else { showFieldError('celular', false); }
 
-      // Validar CPF
-      if (!isValidCPF(cpfInput.value)) {
-        showFieldError('cpf', true);
-        isValid = false;
-      } else {
-        showFieldError('cpf', false);
-      }
-
-      // Validar senha
-      if (passwordInput.value.length < 6) {
-        showFieldError('password', true);
-        isValid = false;
-      } else {
-        showFieldError('password', false);
-      }
-
-      // Validar confirmação de senha
-      if (passwordInput.value !== passwordConfirmInput.value) {
-        showFieldError('passwordMatch', true);
-        isValid = false;
-      } else {
-        showFieldError('passwordMatch', false);
-      }
-
-      // Validar nome
-      if (nomeInput.value.trim().length < 3) {
-        showFieldError('nome', true);
-        isValid = false;
-      } else {
-        showFieldError('nome', false);
-      }
-
-      // Validar celular
-      if (!isValidCelular(celularInput.value)) {
-        showFieldError('celular', true);
-        isValid = false;
-      } else {
-        showFieldError('celular', false);
-      }
-
-      return isValid;
+      return valid;
     }
 
-    // ==================== EVENT LISTENERS - MÁSCARAS ====================
-    cpfInput.addEventListener('input', function(e) {
+    // ==================== MÁSCARAS EM TEMPO REAL ====================
+    document.getElementById('cpf').addEventListener('input', function(e) {
       e.target.value = formatCPF(e.target.value);
     });
 
-    celularInput.addEventListener('input', function(e) {
+    document.getElementById('celular').addEventListener('input', function(e) {
       e.target.value = formatCelular(e.target.value);
-    });
-
-    // ==================== EVENT LISTENERS - VALIDAÇÃO EM TEMPO REAL ====================
-    passwordConfirmInput.addEventListener('input', function() {
-      if (passwordInput.value && passwordConfirmInput.value) {
-        showFieldError('passwordMatch', passwordInput.value !== passwordConfirmInput.value);
-      }
-    });
-
-    emailInput.addEventListener('blur', function() {
-      if (emailInput.value) {
-        showFieldError('email', !isValidEmail(emailInput.value.trim()));
-      }
-    });
-
-    cpfInput.addEventListener('blur', function() {
-      if (cpfInput.value) {
-        showFieldError('cpf', !isValidCPF(cpfInput.value));
-      }
     });
 
     // ==================== FUNÇÕES DE MENSAGEM ====================
@@ -372,106 +269,126 @@
       messageDiv.className = 'auth-message show ' + (isError ? 'error-message' : 'success-message');
     }
 
-    function hideMessage() {
-      messageDiv.className = 'auth-message';
-    }
-
     function setLoading(loading) {
       btnCadastrar.disabled = loading;
-      if (loading) {
-        btnCadastrar.innerHTML = '<span class="loading-spinner"></span> Cadastrando...';
-      } else {
-        btnCadastrar.innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar';
-      }
+      btnCadastrar.innerHTML = loading 
+        ? '<i class="fas fa-spinner fa-spin"></i> Cadastrando...' 
+        : '<i class="fas fa-user-plus"></i> Cadastrar';
     }
 
     // ==================== ENVIO DO FORMULÁRIO ====================
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
-      hideMessage();
+      messageDiv.className = 'auth-message';
 
-      // Validar formulário
       if (!validateForm()) {
         showMessage('Por favor, corrija os erros no formulário.', true);
         return;
       }
 
-      // Verificar conexão com Supabase
-      if (!supabase) {
-        showMessage('Erro de conexão. Tente novamente mais tarde.', true);
-        return;
-      }
-
       setLoading(true);
 
+      const email = document.getElementById('email').value.trim();
+      const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+      const password = document.getElementById('password').value;
+      const nome = document.getElementById('nome').value.trim();
+      const pai = document.getElementById('pai').value.trim() || null;
+      const mae = document.getElementById('mae').value.trim() || null;
+      const celular = document.getElementById('celular').value.replace(/\D/g, '');
+
       try {
-        // Dados do usuário
-        const userData = {
-          email: emailInput.value.trim(),
-          password: passwordInput.value,
-          options: {
-            data: {
-              nome: nomeInput.value.trim(),
-              cpf: cpfInput.value.replace(/\D/g, ''),
-              celular: celularInput.value.replace(/\D/g, ''),
-              pai: paiInput.value.trim() || null,
-              mae: maeInput.value.trim() || null
-            }
-          }
-        };
+        // 1. Verificar se CPF já existe na tabela municipes
+        const { data: existingCPF, error: cpfCheckError } = await supabase
+          .from('municipes')
+          .select('id')
+          .eq('cpf', cpf)
+          .maybeSingle();
 
-        // Criar conta no Supabase Auth
-        const { data, error } = await supabase.auth.signUp(userData);
-
-        if (error) {
-          // Tratar erros comuns
-          if (error.message.includes('already registered')) {
-            showMessage('Este e-mail já está cadastrado. Tente fazer login.', true);
-          } else if (error.message.includes('Invalid email')) {
-            showMessage('E-mail inválido. Verifique e tente novamente.', true);
-          } else if (error.message.includes('Password')) {
-            showMessage('A senha deve ter no mínimo 6 caracteres.', true);
-          } else {
-            showMessage('Erro ao criar conta: ' + error.message, true);
-          }
+        if (cpfCheckError) {
+          console.error('Erro ao verificar CPF:', cpfCheckError);
+          showMessage('Erro ao verificar CPF. Tente novamente.', true);
+          setLoading(false);
           return;
         }
 
-        // Verificar se precisa confirmar email
-        if (data.user && !data.session) {
-          showMessage('Cadastro realizado! Verifique seu e-mail para confirmar a conta.', false);
-          form.reset();
-        } else if (data.session) {
-          showMessage('Cadastro realizado com sucesso! Redirecionando...', false);
-          setTimeout(() => {
-            window.location.href = 'painel.html';
-          }, 2000);
+        if (existingCPF) {
+          showMessage('Este CPF já está cadastrado. Faça login.', true);
+          setLoading(false);
+          return;
         }
 
+        // 2. Verificar se email já existe
+        const { data: existingEmail, error: emailCheckError } = await supabase
+          .from('municipes')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (emailCheckError) {
+          console.error('Erro ao verificar email:', emailCheckError);
+          showMessage('Erro ao verificar e-mail. Tente novamente.', true);
+          setLoading(false);
+          return;
+        }
+
+        if (existingEmail) {
+          showMessage('Este e-mail já está cadastrado. Faça login.', true);
+          setLoading(false);
+          return;
+        }
+
+        // 3. Criar usuário no Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password
+        });
+
+        if (authError) {
+          console.error('Erro no Auth:', authError);
+          if (authError.message.includes('already registered')) {
+            showMessage('Este e-mail já está cadastrado.', true);
+          } else {
+            showMessage('Erro ao criar conta: ' + authError.message, true);
+          }
+          setLoading(false);
+          return;
+        }
+
+        // 4. Inserir dados na tabela municipes
+        const { data: municipeData, error: insertError } = await supabase
+          .from('municipes')
+          .insert([{
+            user_id: authData.user.id,
+            email: email,
+            cpf: cpf,
+            nome: nome,
+            nome_pai: pai,
+            nome_mae: mae,
+            celular: celular
+          }])
+          .select();
+
+        if (insertError) {
+          console.error('Erro ao inserir municipe:', insertError);
+          showMessage('Erro ao salvar dados. Tente novamente.', true);
+          setLoading(false);
+          return;
+        }
+
+        // 5. Sucesso!
+        showMessage('Cadastro realizado com sucesso! Redirecionando...', false);
+        form.reset();
+        
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+
       } catch (err) {
-        console.error('Erro no cadastro:', err);
+        console.error('Erro inesperado:', err);
         showMessage('Ocorreu um erro inesperado. Tente novamente.', true);
-      } finally {
         setLoading(false);
       }
     });
-
-    // ==================== VERIFICAR SE JÁ ESTÁ LOGADO ====================
-    async function checkAuth() {
-      if (!supabase) return;
-      
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          window.location.href = 'painel.html';
-        }
-      } catch (err) {
-        console.error('Erro ao verificar sessão:', err);
-      }
-    }
-
-    // Executar ao carregar a página
-    checkAuth();
   </script>
 </body>
 </html>
