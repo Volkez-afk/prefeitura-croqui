@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrador - Gerenciar Usuários</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>Painel do Administrador</h2>
+      <button id="logoutBtn" class="btn logout-btn">Sair</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+      <!-- Formulário de criação de usuário -->
+      <div>
+        <h3>Criar novo usuário</h3>
+        <form id="createUserForm">
+          <div class="form-group">
+            <label for="fullName">Nome completo *</label>
+            <input type="text" id="fullName" required>
+          </div>
+          <div class="form-group">
+            <label for="email">E-mail *</label>
+            <input type="email" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Senha *</label>
+            <input type="password" id="password" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="role">Função *</label>
+            <select id="role" required>
+              <option value="">Selecione</option>
+              <option value="server">Servidor</option>
+              <option value="sabesp_cpfl">Sabesp/CPFL</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Criar usuário</button>
+          <div id="createMessage" style="margin-top: 15px;"></div>
+        </form>
+      </div>
+
+      <!-- Lista de usuários existentes -->
+      <div>
+        <h3>Usuários cadastrados</h3>
+        <div id="usersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js'
+    import { logout, checkRole } from './js/auth.js'
+
+    if (!await checkRole(['admin'])) {
+      window.location.href = 'login.html'
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', logout)
+
+    // Carregar lista de usuários (apenas admin pode ver)
+    async function loadUsers() {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      const usersDiv = document.getElementById('usersList')
+      if (profiles.length === 0) {
+        usersDiv.innerHTML = '<p>Nenhum usuário cadastrado.</p>'
+        return
+      }
+
+      let html = '<table class="table"><thead><tr><th>Nome</th><th>E-mail</th><th>Função</th><th>Criado em</th></tr></thead><tbody>'
+      
+      // Para cada perfil, buscar e-mail do auth.users (não disponível diretamente)
+      // Vamos buscar os usuários da tabela auth.users? Não temos acesso via cliente.
+      // Solução: armazenar e-mail no perfil também, ou usar o email do auth.users com função admin (requer service role).
+      // Para simplificar, vamos adicionar campo email na tabela profiles.
+      // Você deve alterar a tabela profiles: ALTER TABLE profiles ADD COLUMN email TEXT;
+      // E preencher com o e-mail no momento da criação.
+      
+      // Assumindo que adicionamos o campo email à tabela profiles:
+      profiles.forEach(p => {
+        html += `<tr>
+          <td>${p.full_name}</td>
+          <td>${p.email || '—'}</td>
+          <td>${p.role}</td>
+          <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
+        </tr>`
+      })
+      
+      html += '</tbody></table>'
+      usersDiv.innerHTML = html
+    }
+
+    // Criar usuário
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      
+      const fullName = document.getElementById('fullName').value
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+      const role = document.getElementById('role').value
+
+      const msgDiv = document.getElementById('createMessage')
+      msgDiv.style.color = 'red'
+
+      try {
+        // 1. Criar usuário no Auth
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName, role } // metadados, mas não confiável para RLS
+          }
+        })
+
+        if (signUpError) throw signUpError
+        if (!signUpData.user) throw new Error('Usuário não criado')
+
+        // 2. Inserir perfil com e-mail
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{
+            id: signUpData.user.id,
+            full_name: fullName,
+            email: email,
+            role: role
+          }])
+
+        if (profileError) throw profileError
+
+        msgDiv.style.color = 'green'
+        msgDiv.textContent = 'Usuário criado com sucesso!'
+        document.getElementById('createUserForm').reset()
+        loadUsers()
+      } catch (error) {
+        console.error(error)
+        msgDiv.textContent = 'Erro ao criar usuário: ' + error.message
+      }
+    })
+
+    loadUsers()
+  </script>
+</body>
+</html>
