@@ -3,23 +3,566 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prefeitura - Solicitação de Croqui</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <title>Prefeitura de Botucatu - Solicitação de Croqui</title>
+  
+  <!-- Fontes e ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* RESET E VARIÁVEIS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      width: 100%;
+    }
+
+    /* --- BARRA DE ACESSIBILIDADE (simplificada) --- */
+    .accessibility-bar {
+      background-color: #0a4b6e;
+      color: white;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .accessibility-bar .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .accessibility-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .accessibility-links a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+
+    .accessibility-links a:hover {
+      opacity: 0.9;
+      text-decoration: underline;
+    }
+
+    /* --- HEADER PRINCIPAL (centralizado) --- */
+    .main-header {
+      background-color: white;
+      padding: 30px 0 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .main-header .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .logo-brasao {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .titulos-prefeitura {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .titulo-principal {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0a4b6e;
+      line-height: 1.2;
+    }
+
+    .subtitulo {
+      font-size: 16px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* --- MENU (simples, opcional) --- */
+    .nav-menu {
+      background-color: white;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 0;
+    }
+
+    .nav-menu .container {
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-links a {
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #0a4b6e;
+      border-bottom-color: #0a4b6e;
+    }
+
+    /* --- HERO – SOLICITAÇÃO DE CROQUI (CENTRALIZADO) --- */
+    .hero-servico {
+      padding: 60px 0 40px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #ffffff 100%);
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #dcfce7;
+      color: #166534;
+      padding: 6px 20px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .hero-content h1 {
+      font-size: 44px;
+      font-weight: 800;
+      color: #0a4b6e;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .hero-description {
+      font-size: 20px;
+      color: #334155;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* BOTÃO GRANDE, CENTRALIZADO, AZUL MAIS CLARO (#2563eb) */
+    .btn-solicitar-grande {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background-color: #2563eb;
+      color: white;
+      font-size: 26px;
+      font-weight: 700;
+      padding: 22px 60px;
+      border-radius: 60px;
+      text-decoration: none;
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s;
+      margin-bottom: 24px;
+      border: none;
+      letter-spacing: 1px;
+    }
+
+    .btn-solicitar-grande:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-solicitar-grande i {
+      font-size: 28px;
+    }
+
+    .info-urgente {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #475569;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    .info-urgente i {
+      color: #0a4b6e;
+    }
+
+    /* --- CARDS DE ACESSO POR PERFIL (centralizados) --- */
+    .acesso-rapido-section {
+      padding: 40px 0 60px;
+      background-color: white;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #0a4b6e;
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: #64748b;
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .perfil-card {
+      background-color: white;
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 280px;
+    }
+
+    .perfil-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+      border-color: #94a3b8;
+    }
+
+    .card-icon {
+      width: 72px;
+      height: 72px;
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .perfil-card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #0f172a;
+    }
+
+    .perfil-card p {
+      color: #475569;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* --- RODAPÉ ENXUTO, CENTRALIZADO --- */
+    footer {
+      background-color: #0f172a;
+      color: white;
+      padding: 40px 0 24px;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+    }
+
+    .footer-info h3 {
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .footer-contact {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      color: #cbd5e1;
+      font-size: 16px;
+    }
+
+    .footer-contact a {
+      color: #cbd5e1;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .footer-contact a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    .site-oficial {
+      background-color: #1e293b;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      text-decoration: none;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+
+    .site-oficial:hover {
+      background-color: #2563eb;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      margin-top: 32px;
+      padding-top: 24px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 640px) {
+      .hero-content h1 {
+        font-size: 34px;
+      }
+      .btn-solicitar-grande {
+        font-size: 22px;
+        padding: 18px 40px;
+      }
+      .card-grid {
+        flex-direction: column;
+        align-items: center;
+      }
+      .footer-contact {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Solicitação de Croqui Online</h1>
-    <p>Bem-vindo ao sistema oficial da prefeitura. Escolha uma opção:</p>
-    
-    <div style="margin: 30px 0;">
-      <a href="solicitar.html" class="btn" style="font-size: 20px; padding: 15px 30px;">Solicitar Croqui</a>
-    </div>
-    
-    <div style="display: flex; gap: 20px; margin-top: 40px;">
-      <a href="login.html" class="btn btn-secondary">Servidor</a>
-      <a href="login.html" class="btn btn-secondary">Administrador</a>
-      <a href="login.html" class="btn btn-secondary">SABESP/CPFL</a>
+  <!-- BARRA DE ACESSIBILIDADE (simples, centralizada) -->
+  <div class="accessibility-bar">
+    <div class="container">
+      <div class="accessibility-links">
+        <a href="#"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
+        <a href="#"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
+        <a href="#"><i class="fas fa-adjust"></i> Alto Contraste</a>
+        <a href="#"><i class="fas fa-hands"></i> Libras</a>
+        <a href="#"><i class="fas fa-sitemap"></i> Mapa do Site</a>
+      </div>
     </div>
   </div>
+
+  <!-- CABEÇALHO PRINCIPAL CENTRALIZADO -->
+  <div class="main-header">
+    <div class="container">
+      <div class="logo-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
+        <div class="titulos-prefeitura">
+          <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
+          <span class="subtitulo">Portal de Serviços Digitais</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU PRINCIPAL (simples, centralizado) -->
+  <div class="nav-menu">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Início</a></li>
+        <li><a href="#">Serviços</a></li>
+        <li><a href="#">A Prefeitura</a></li>
+        <li><a href="#">Contato</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- HERO – EXCLUSIVO PARA SOLICITAÇÃO DE CROQUI -->
+  <div class="hero-servico">
+    <div class="container">
+      <div class="hero-content">
+        <span class="badge"><i class="fas fa-check-circle"></i> Serviço 100% Digital</span>
+        <h1>Solicitação de Croqui Online</h1>
+        <p class="hero-description">
+          Solicite agora o croqui para atribuição de número oficial do seu imóvel.<br>
+          Agilidade, transparência e acompanhamento online.
+        </p>
+        <!-- BOTÃO GIGANTE CENTRALIZADO -->
+        <a href="solicitar.html" class="btn-solicitar-grande">
+          <i class="fas fa-file-signature"></i> SOLICITAR CROQUI
+        </a>
+        <div class="info-urgente">
+          <i class="fas fa-info-circle"></i> Prazo médio de análise: 5 dias úteis
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACESSO POR PERFIL (cards centralizados) -->
+  <div class="acesso-rapido-section">
+    <div class="container">
+      <h2 class="section-title">Acesso por Perfil</h2>
+      <p class="section-subtitle">Área restrita para servidores, administradores e concessionárias</p>
+      
+      <div class="card-grid">
+        <!-- Servidor -->
+        <a href="login.html" class="perfil-card">
+          <div class="card-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <h3>Servidor</h3>
+          <p>Análise, aprovação e encaminhamento de croquis oficiais.</p>
+        </a>
+        <!-- Administrador -->
+        <a href="login.html" class="perfil-card">
+          <div class="card-icon">
+            <i class="fas fa-user-cog"></i>
+          </div>
+          <h3>Administrador</h3>
+          <p>Gestão de usuários e permissões do sistema.</p>
+        </a>
+        <!-- SABESP / CPFL -->
+        <a href="login.html" class="perfil-card">
+          <div class="card-icon">
+            <i class="fas fa-tint"></i>
+          </div>
+          <h3>SABESP / CPFL</h3>
+          <p>Consulta de croquis aprovados para ligação de água e energia.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ ENXUTO, CENTRALIZADO, COM LINK OFICIAL -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-info">
+          <h3>Prefeitura Municipal de Botucatu</h3>
+          <div class="footer-contact">
+            <a href="https://www.botucatu.sp.gov.br" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-globe"></i> www.botucatu.sp.gov.br
+            </a>
+            <a href="tel:1438111400">
+              <i class="fas fa-phone-alt"></i> (14) 3811-1400
+            </a>
+            <a href="mailto:gabinete@botucatu.sp.gov.br">
+              <i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br
+            </a>
+            <span>
+              <i class="fas fa-clock"></i> 08h às 16h30
+            </span>
+          </div>
+        </div>
+        
+        <div class="footer-links">
+          <a href="#">Acessibilidade</a>
+          <a href="#">Política de Privacidade</a>
+          <a href="#">Ouvidoria</a>
+          <a href="#">Transparência</a>
+        </div>
+
+        <a href="https://www.botucatu.sp.gov.br" target="_blank" rel="noopener noreferrer" class="site-oficial">
+          <i class="fas fa-external-link-alt"></i> ACESSAR PORTAL OFICIAL
+        </a>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>© 2026 Prefeitura Municipal de Botucatu. Todos os direitos reservados.</p>
+        <p style="margin-top: 6px;">Sistema de Solicitação de Croqui – Versão 1.0</p>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
