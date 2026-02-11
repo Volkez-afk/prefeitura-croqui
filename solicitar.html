@@ -4,15 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solicitar Croqui - Prefeitura de Botucatu</title>
-  <!-- Importação do Supabase via módulo (mesmo padrão do cadastro/login) -->
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
-    window.supabase = supabase; // disponibiliza globalmente se necessário (opcional)
+    window.supabase = supabase; // para debug no console
   </script>
   <style>
-    /* Estilos mínimos para funcionalidade */
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .container { max-width: 800px; margin: 0 auto; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
     .sidebar { float: left; width: 200px; margin-right: 20px; }
     .content { float: left; width: 550px; }
     .clear { clear: both; }
@@ -22,79 +20,73 @@
     .tooltip { position: relative; display: inline-block; margin-left: 5px; cursor: help; }
     .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: #555; color: #fff; text-align: center; padding: 5px; border-radius: 6px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; transition: opacity 0.3s; }
     .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-    .notificacao { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-    .status-pending { color: orange; }
-    .status-approved { color: green; }
-    .status-denied { color: red; }
-    .status-forwarded { color: blue; }
+    .notificacao { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-left: 4px solid; }
+    .status-pending { border-left-color: orange; color: orange; }
+    .status-approved { border-left-color: green; color: green; }
+    .status-denied { border-left-color: red; color: red; }
+    .status-forwarded { border-left-color: blue; color: blue; }
+    .error-box { background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; margin-top: 10px; }
+    .success-box { background: #dcfce7; color: #166534; padding: 10px; border-radius: 8px; margin-top: 10px; }
+    .btn { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; }
+    .btn:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Solicitação de Croqui</h2>
 
-    <!-- Área de verificação de login (inicialmente oculta, será exibida pelo JS) -->
+    <!-- Verificação de login -->
     <div id="loginVerification" style="display: none; background: #fee2e2; padding: 20px; border-radius: 8px;">
       <p style="color: #b91c1c; font-weight: bold;">Você não está logado.</p>
-      <p><a href="login.html" style="background: #2563eb; color: white; padding: 8px 16px; border-radius: 30px; text-decoration: none;">Fazer login</a></p>
+      <a href="login.html" class="btn">Fazer login</a>
     </div>
 
-    <!-- Conteúdo principal (inicialmente oculto, será exibido se logado) -->
+    <!-- Conteúdo principal -->
     <div id="mainContent" style="display: none;">
-      <!-- Sidebar com dados do munícipe e notificações -->
+      <!-- Sidebar -->
       <div class="sidebar">
         <div id="perfil">
           <h3>Olá, <span id="nomeUsuario"></span>!</h3>
           <p><strong>CPF:</strong> <span id="cpfUsuario"></span></p>
           <p><strong>E-mail:</strong> <span id="emailUsuario"></span></p>
         </div>
-
         <h4>Notificações</h4>
         <div id="notificacoes">
           <p>Carregando...</p>
         </div>
       </div>
 
-      <!-- Formulário de solicitação -->
+      <!-- Formulário -->
       <div class="content">
         <form id="solicitacaoForm">
           <div class="form-group">
-            <label for="iptu">
+            <label>
               Identificação do imóvel
-              <span class="tooltip">❓
-                <span class="tooltiptext">Número do IPTU do imóvel (formato XX.XXXX.XXXX)</span>
-              </span>
+              <span class="tooltip">❓<span class="tooltiptext">Número do IPTU do imóvel (formato XX.XXXX.XXXX)</span></span>
             </label>
-            <input type="text" id="iptu" name="iptu" placeholder="00.0000.0000" maxlength="12" required>
+            <input type="text" id="iptu" placeholder="00.0000.0000" maxlength="12" required>
             <small>Apenas números, formato XX.XXXX.XXXX</small>
           </div>
-
           <div class="form-group">
-            <label for="documento">
+            <label>
               Documento de posse
-              <span class="tooltip">❓
-                <span class="tooltiptext">Matrícula, Escritura ou contrato de compra e venda validado por cartório ou assinatura digital</span>
-              </span>
+              <span class="tooltip">❓<span class="tooltiptext">Matrícula, Escritura ou contrato de compra e venda validado por cartório ou assinatura digital</span></span>
             </label>
-            <input type="file" id="documento" name="documento" accept=".pdf,.jpg,.jpeg,.png" required>
+            <input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png" required>
           </div>
-
           <div class="form-group">
-            <label for="quadra">Quadra</label>
-            <input type="text" id="quadra" name="quadra" maxlength="5" placeholder="Apenas números (máx 5)" required>
+            <label>Quadra</label>
+            <input type="text" id="quadra" maxlength="5" placeholder="Apenas números (máx 5)" required>
           </div>
-
           <div class="form-group">
-            <label for="lote">Lote</label>
-            <input type="text" id="lote" name="lote" maxlength="4" placeholder="Apenas números (máx 4)" required>
+            <label>Lote</label>
+            <input type="text" id="lote" maxlength="4" placeholder="Apenas números (máx 4)" required>
           </div>
-
           <div class="form-group">
-            <label for="logradouro">Logradouro</label>
-            <input type="text" id="logradouro" name="logradouro" placeholder="Rua, Avenida, etc." required>
+            <label>Logradouro</label>
+            <input type="text" id="logradouro" placeholder="Rua, Avenida, etc." required>
           </div>
-
-          <button type="submit">Enviar solicitação</button>
+          <button type="submit" class="btn" id="btnEnviar">Enviar solicitação</button>
         </form>
         <div id="mensagem"></div>
       </div>
@@ -103,239 +95,160 @@
   </div>
 
   <script type="module">
-    // ==================== CONFIGURAÇÃO SUPABASE ====================
-    // Importa o cliente já configurado do seu arquivo central
     import { supabase } from './js/supabaseClient.js';
 
-    // ==================== UTILITÁRIOS ====================
-    function formatIPTU(value) {
-      return value.replace(/\D/g, '')
-        .replace(/(\d{2})(\d)/, '$1.$2')
-        .replace(/(\d{4})(\d)/, '$1.$2')
-        .replace(/(\d{4})\d+?$/, '$1');
+    // ==================== MÁSCARAS ====================
+    function formatIPTU(v) {
+      return v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{4})(\d)/, '$1.$2').replace(/(\d{4})\d+?$/, '$1');
     }
+    document.getElementById('iptu')?.addEventListener('input', e => e.target.value = formatIPTU(e.target.value));
+    document.getElementById('quadra')?.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0,5));
+    document.getElementById('lote')?.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0,4));
 
-    // Máscaras - só aplica se os elementos existirem
-    function aplicarMascaras() {
-      const iptuField = document.getElementById('iptu');
-      if (iptuField) {
-        iptuField.addEventListener('input', function(e) {
-          e.target.value = formatIPTU(e.target.value);
-        });
-      }
-
-      const quadraField = document.getElementById('quadra');
-      if (quadraField) {
-        quadraField.addEventListener('input', function(e) {
-          e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
-        });
-      }
-
-      const loteField = document.getElementById('lote');
-      if (loteField) {
-        loteField.addEventListener('input', function(e) {
-          e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-        });
-      }
-    }
-
-    // ==================== VERIFICAÇÃO DE LOGIN ====================
-    function checkLogin() {
+    // ==================== VERIFICA LOGIN ====================
+    function getUsuario() {
       const userStr = localStorage.getItem('user');
-      const loginDiv = document.getElementById('loginVerification');
-      const mainDiv = document.getElementById('mainContent');
-
-      if (!userStr) {
-        if (loginDiv) loginDiv.style.display = 'block';
-        if (mainDiv) mainDiv.style.display = 'none';
-        return null;
-      }
-      try {
-        const user = JSON.parse(userStr);
-        if (loginDiv) loginDiv.style.display = 'none';
-        if (mainDiv) mainDiv.style.display = 'block';
-        return user;
-      } catch (e) {
-        localStorage.removeItem('user');
-        if (loginDiv) loginDiv.style.display = 'block';
-        if (mainDiv) mainDiv.style.display = 'none';
-        return null;
-      }
+      if (!userStr) return null;
+      try { return JSON.parse(userStr); } catch { return null; }
     }
 
-    // ==================== CARREGAR DADOS DO USUÁRIO ====================
-    async function carregarDadosUsuario(user) {
-      document.getElementById('nomeUsuario').textContent = user.nome || 'Usuário';
-      document.getElementById('cpfUsuario').textContent = user.cpf || '';
+    const usuario = getUsuario();
+    const loginDiv = document.getElementById('loginVerification');
+    const mainDiv = document.getElementById('mainContent');
+
+    if (!usuario) {
+      loginDiv.style.display = 'block';
+      mainDiv.style.display = 'none';
+      throw new Error('Usuário não logado'); // interrompe a execução
+    } else {
+      loginDiv.style.display = 'none';
+      mainDiv.style.display = 'block';
+    }
+
+    // ==================== CARREGA DADOS DO USUÁRIO ====================
+    (async () => {
+      document.getElementById('nomeUsuario').textContent = usuario.nome || 'Usuário';
+      document.getElementById('cpfUsuario').textContent = usuario.cpf || '';
       
-      // Buscar e-mail na tabela municipes
       const { data, error } = await supabase
         .from('municipes')
         .select('email')
-        .eq('cpf', user.cpf)
+        .eq('cpf', usuario.cpf)
         .maybeSingle();
-      
-      if (data && data.email) {
-        document.getElementById('emailUsuario').textContent = data.email;
-      } else {
-        document.getElementById('emailUsuario').textContent = 'Não informado';
-      }
-    }
+      document.getElementById('emailUsuario').textContent = data?.email || 'Não informado';
+    })();
 
-    // ==================== CARREGAR NOTIFICAÇÕES ====================
-    async function carregarNotificacoes(user) {
-      const divNotificacoes = document.getElementById('notificacoes');
-      
+    // ==================== CARREGA NOTIFICAÇÕES ====================
+    (async () => {
+      const div = document.getElementById('notificacoes');
       const { data, error } = await supabase
         .from('croqui_requests')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', usuario.id)
         .order('created_at', { ascending: false });
-
+      
       if (error) {
-        console.error('Erro ao carregar notificações:', error);
-        divNotificacoes.innerHTML = '<p>Erro ao carregar notificações.</p>';
+        div.innerHTML = '<p class="error-box">Erro ao carregar notificações.</p>';
         return;
       }
-
-      if (!data || data.length === 0) {
-        divNotificacoes.innerHTML = '<p>Você ainda não fez nenhuma solicitação.</p>';
+      if (!data?.length) {
+        div.innerHTML = '<p>Você ainda não fez nenhuma solicitação.</p>';
         return;
       }
-
+      
       let html = '';
-      data.forEach(sol => {
-        let statusClass = '';
-        let statusText = '';
-        switch (sol.status) {
-          case 'pending': statusClass = 'status-pending'; statusText = '⏳ Pendente'; break;
-          case 'approved': statusClass = 'status-approved'; statusText = '✅ Aprovado'; break;
-          case 'denied': statusClass = 'status-denied'; statusText = '❌ Negado'; break;
-          case 'forwarded': statusClass = 'status-forwarded'; statusText = '↪️ Encaminhado'; break;
-          default: statusClass = ''; statusText = sol.status;
-        }
-        html += `<div class="notificacao">
-          <strong>${sol.logradouro}</strong><br>
-          <span class="${statusClass}">${statusText}</span><br>
-          <small>${new Date(sol.created_at).toLocaleDateString('pt-BR')}</small>
+      data.forEach(s => {
+        const status = {
+          pending: '⏳ Pendente',
+          approved: '✅ Aprovado',
+          denied: '❌ Negado',
+          forwarded: '↪️ Encaminhado'
+        }[s.status] || s.status;
+        html += `<div class="notificacao status-${s.status}">
+          <strong>${s.logradouro}</strong><br>
+          <span>${status}</span><br>
+          <small>${new Date(s.created_at).toLocaleDateString('pt-BR')}</small>
         </div>`;
       });
-      divNotificacoes.innerHTML = html;
-    }
+      div.innerHTML = html;
+    })();
 
-    // ==================== ENVIO DA SOLICITAÇÃO ====================
-    async function enviarSolicitacao(user, formData) {
-      const msgDiv = document.getElementById('mensagem');
-      msgDiv.style.color = 'red';
-      msgDiv.textContent = '';
+    // ==================== ENVIO DO FORMULÁRIO ====================
+    document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const msg = document.getElementById('mensagem');
+      msg.innerHTML = '';
+      const btn = document.getElementById('btnEnviar');
+      
+      const iptu = document.getElementById('iptu').value.trim();
+      const quadra = document.getElementById('quadra').value.trim();
+      const lote = document.getElementById('lote').value.trim();
+      const logradouro = document.getElementById('logradouro').value.trim();
+      const file = document.getElementById('documento').files[0];
 
-      // Validações
-      if (!formData.iptu || formData.iptu.replace(/\D/g, '').length < 10) {
-        msgDiv.textContent = 'IPTU inválido. Preencha no formato XX.XXXX.XXXX.';
-        return;
+      // validações
+      if (!iptu || iptu.replace(/\D/g, '').length < 10) {
+        msg.innerHTML = '<div class="error-box">IPTU inválido.</div>'; return;
       }
-      if (!formData.quadra || formData.quadra.length === 0) {
-        msgDiv.textContent = 'Preencha a quadra.';
-        return;
-      }
-      if (!formData.lote || formData.lote.length === 0) {
-        msgDiv.textContent = 'Preencha o lote.';
-        return;
-      }
-      if (!formData.logradouro) {
-        msgDiv.textContent = 'Preencha o logradouro.';
-        return;
-      }
-      if (!formData.documento) {
-        msgDiv.textContent = 'Selecione um documento.';
-        return;
-      }
+      if (!quadra) { msg.innerHTML = '<div class="error-box">Preencha a quadra.</div>'; return; }
+      if (!lote) { msg.innerHTML = '<div class="error-box">Preencha o lote.</div>'; return; }
+      if (!logradouro) { msg.innerHTML = '<div class="error-box">Preencha o logradouro.</div>'; return; }
+      if (!file) { msg.innerHTML = '<div class="error-box">Selecione um documento.</div>'; return; }
 
-      const btn = document.querySelector('button[type=submit]');
       btn.disabled = true;
       btn.textContent = 'Enviando...';
 
       try {
-        const file = formData.documento;
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-        // Upload para o bucket 'documentos'
+        console.log('📤 Iniciando upload...');
+        
+        // 1. Upload do arquivo
+        const fileName = `${usuario.id}/${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage
           .from('documentos')
           .upload(fileName, file);
 
         if (uploadError) {
-          console.error('Erro upload:', uploadError);
-          throw new Error('Falha ao enviar o documento. Tente novamente.');
+          console.error('❌ Upload error:', uploadError);
+          throw new Error(`Upload falhou: ${uploadError.message}`);
         }
 
-        // Obter URL pública
+        // 2. URL pública
         const { data: urlData } = supabase.storage
           .from('documentos')
           .getPublicUrl(fileName);
-
         const documentUrl = urlData.publicUrl;
+        console.log('✅ Upload OK, URL:', documentUrl);
 
-        // Inserir solicitação
+        // 3. Inserir solicitação
         const { error: insertError } = await supabase
           .from('croqui_requests')
           .insert([{
-            user_id: user.id,
-            iptu: formData.iptu,
+            user_id: usuario.id,
+            iptu,
             document_url: documentUrl,
-            quadra: formData.quadra,
-            lote: formData.lote,
-            logradouro: formData.logradouro,
+            quadra,
+            lote,
+            logradouro,
             status: 'pending'
           }]);
 
         if (insertError) {
-          console.error('Erro insert:', insertError);
-          throw new Error('Erro ao salvar a solicitação.');
+          console.error('❌ Insert error:', insertError);
+          throw new Error(`Erro ao salvar: ${insertError.message}`);
         }
 
-        msgDiv.style.color = 'green';
-        msgDiv.textContent = 'Solicitação enviada com sucesso!';
-        btn.disabled = false;
-        btn.textContent = 'Enviar solicitação';
-
-        // Limpar formulário
+        msg.innerHTML = '<div class="success-box">✅ Solicitação enviada com sucesso!</div>';
         document.getElementById('solicitacaoForm').reset();
-
+        
         // Recarregar notificações
-        carregarNotificacoes(user);
-      } catch (error) {
-        console.error(error);
-        msgDiv.style.color = 'red';
-        msgDiv.textContent = error.message || 'Erro ao enviar solicitação.';
+        setTimeout(() => location.reload(), 1500);
+      } catch (err) {
+        console.error(err);
+        msg.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
         btn.disabled = false;
         btn.textContent = 'Enviar solicitação';
       }
-    }
-
-    // ==================== INICIALIZAÇÃO ====================
-    document.addEventListener('DOMContentLoaded', async () => {
-      aplicarMascaras();
-
-      const user = checkLogin();
-      if (!user) return;
-
-      await carregarDadosUsuario(user);
-      await carregarNotificacoes(user);
-
-      document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const iptu = document.getElementById('iptu').value.trim();
-        const quadra = document.getElementById('quadra').value.trim();
-        const lote = document.getElementById('lote').value.trim();
-        const logradouro = document.getElementById('logradouro').value.trim();
-        const documento = document.getElementById('documento').files[0];
-
-        const formData = { iptu, quadra, lote, logradouro, documento };
-        await enviarSolicitacao(user, formData);
-      });
     });
   </script>
 </body>
