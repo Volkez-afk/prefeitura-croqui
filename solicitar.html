@@ -4,252 +4,844 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solicitar Croqui - Prefeitura de Botucatu</title>
-  <script type="module">
-    import { supabase } from './js/supabaseClient.js';
-    window.supabase = supabase; // para debug no console
-  </script>
+
+  <!-- Fontes e ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Estilo padrão do portal (mesmo do index/cadastro/login) -->
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
-    .sidebar { float: left; width: 200px; margin-right: 20px; }
-    .content { float: left; width: 550px; }
-    .clear { clear: both; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-weight: bold; }
-    input[type=text], input[type=file] { width: 100%; padding: 8px; }
-    .tooltip { position: relative; display: inline-block; margin-left: 5px; cursor: help; }
-    .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: #555; color: #fff; text-align: center; padding: 5px; border-radius: 6px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; transition: opacity 0.3s; }
-    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-    .notificacao { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-left: 4px solid; }
-    .status-pending { border-left-color: orange; color: orange; }
-    .status-approved { border-left-color: green; color: green; }
-    .status-denied { border-left-color: red; color: red; }
-    .status-forwarded { border-left-color: blue; color: blue; }
-    .error-box { background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; margin-top: 10px; }
-    .success-box { background: #dcfce7; color: #166534; padding: 10px; border-radius: 8px; margin-top: 10px; }
-    .btn { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; }
-    .btn:hover { background: #1d4ed8; }
+    /* ========== RESET E VARIÁVEIS ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; width: 100%; }
+
+    /* ========== BARRA DE ACESSIBILIDADE ========== */
+    .accessibility-bar {
+      background-color: #0a4b6e;
+      color: white;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    .accessibility-bar .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .accessibility-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .accessibility-links a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .accessibility-links a:hover {
+      opacity: 0.9;
+      text-decoration: underline;
+    }
+
+    /* ========== CABEÇALHO PRINCIPAL ========== */
+    .main-header {
+      background-color: white;
+      padding: 30px 0 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .main-header .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .logo-brasao {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+    .titulos-prefeitura {
+      display: flex;
+      flex-direction: column;
+    }
+    .titulo-principal {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0a4b6e;
+      line-height: 1.2;
+    }
+    .subtitulo {
+      font-size: 16px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* ========== MENU DE NAVEGAÇÃO ========== */
+    .nav-menu {
+      background-color: white;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 0;
+    }
+    .nav-menu .container {
+      display: flex;
+      justify-content: center;
+    }
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .nav-links a {
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #0a4b6e;
+      border-bottom-color: #0a4b6e;
+    }
+
+    /* ========== LAYOUT PRINCIPAL (DASHBOARD) ========== */
+    .dashboard {
+      display: flex;
+      gap: 30px;
+      margin: 40px auto;
+      flex: 1;
+      max-width: 1280px;
+      padding: 0 24px;
+    }
+
+    /* ----- SIDEBAR ----- */
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+      align-self: start;
+    }
+    .perfil-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .perfil-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #0a4b6e, #2563eb);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+    }
+    .perfil-nome h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .perfil-dados {
+      margin-bottom: 28px;
+    }
+    .perfil-dados h4,
+    .notificacoes h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dados-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dado-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    .dado-label {
+      color: #64748b;
+    }
+    .dado-value {
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .notificacoes-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .notificacao-item {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid;
+    }
+    .status-pending { border-left-color: #f59e0b; }
+    .status-approved { border-left-color: #10b981; }
+    .status-denied { border-left-color: #ef4444; }
+    .status-forwarded { border-left-color: #3b82f6; }
+    .notificacao-status {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .notificacao-endereco {
+      font-size: 14px;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .notificacao-data {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* ----- CONTEÚDO PRINCIPAL (FORMULÁRIO) ----- */
+    .main-content {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+    }
+    .main-content h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0a4b6e;
+      margin-bottom: 8px;
+    }
+    .main-content .subtitulo {
+      color: #475569;
+      margin-bottom: 32px;
+    }
+
+    /* ----- FORMULÁRIO ----- */
+    .form-croqui {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tooltip-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: help;
+    }
+    .tooltip-icon i {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .tooltip-icon:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 150%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 10;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .form-control {
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: border 0.2s;
+      width: 100%;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .file-upload {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-upload:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .file-upload i {
+      font-size: 32px;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+    .file-upload span {
+      display: block;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .file-upload small {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .btn-submit {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: fit-content;
+      margin-top: 16px;
+    }
+    .btn-submit:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.02);
+    }
+
+    /* ----- MENSAGENS ----- */
+    .auth-message {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .error-message {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .success-message {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* ========== RODAPÉ ========== */
+    footer {
+      background-color: #0f172a;
+      color: white;
+      padding: 32px 0 24px;
+      margin-top: auto;
+    }
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+    .footer-contact {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: #cbd5e1;
+    }
+    .footer-contact a {
+      color: #cbd5e1;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-contact a:hover {
+      color: white;
+    }
+
+    /* ========== RESPONSIVIDADE ========== */
+    @media (max-width: 900px) {
+      .dashboard {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+    }
+    @media (max-width: 640px) {
+      .footer-contact {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    /* ----- Verificação de login ----- */
+    .login-verification {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 40px auto;
+      max-width: 600px;
+      text-align: center;
+    }
+    .login-verification a {
+      display: inline-block;
+      margin-top: 12px;
+      background: #2563eb;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Solicitação de Croqui</h2>
-
-    <!-- Verificação de login -->
-    <div id="loginVerification" style="display: none; background: #fee2e2; padding: 20px; border-radius: 8px;">
-      <p style="color: #b91c1c; font-weight: bold;">Você não está logado.</p>
-      <a href="login.html" class="btn">Fazer login</a>
-    </div>
-
-    <!-- Conteúdo principal -->
-    <div id="mainContent" style="display: none;">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div id="perfil">
-          <h3>Olá, <span id="nomeUsuario"></span>!</h3>
-          <p><strong>CPF:</strong> <span id="cpfUsuario"></span></p>
-          <p><strong>E-mail:</strong> <span id="emailUsuario"></span></p>
-        </div>
-        <h4>Notificações</h4>
-        <div id="notificacoes">
-          <p>Carregando...</p>
-        </div>
+  <!-- BARRA DE ACESSIBILIDADE -->
+  <div class="accessibility-bar">
+    <div class="container">
+      <div class="accessibility-links">
+        <a href="#"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
+        <a href="#"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
+        <a href="#"><i class="fas fa-adjust"></i> Alto Contraste</a>
+        <a href="#"><i class="fas fa-hands"></i> Libras</a>
+        <a href="#"><i class="fas fa-sitemap"></i> Mapa do Site</a>
       </div>
-
-      <!-- Formulário -->
-      <div class="content">
-        <form id="solicitacaoForm">
-          <div class="form-group">
-            <label>
-              Identificação do imóvel
-              <span class="tooltip">❓<span class="tooltiptext">Número do IPTU do imóvel (formato XX.XXXX.XXXX)</span></span>
-            </label>
-            <input type="text" id="iptu" placeholder="00.0000.0000" maxlength="12" required>
-            <small>Apenas números, formato XX.XXXX.XXXX</small>
-          </div>
-          <div class="form-group">
-            <label>
-              Documento de posse
-              <span class="tooltip">❓<span class="tooltiptext">Matrícula, Escritura ou contrato de compra e venda validado por cartório ou assinatura digital</span></span>
-            </label>
-            <input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png" required>
-          </div>
-          <div class="form-group">
-            <label>Quadra</label>
-            <input type="text" id="quadra" maxlength="5" placeholder="Apenas números (máx 5)" required>
-          </div>
-          <div class="form-group">
-            <label>Lote</label>
-            <input type="text" id="lote" maxlength="4" placeholder="Apenas números (máx 4)" required>
-          </div>
-          <div class="form-group">
-            <label>Logradouro</label>
-            <input type="text" id="logradouro" placeholder="Rua, Avenida, etc." required>
-          </div>
-          <button type="submit" class="btn" id="btnEnviar">Enviar solicitação</button>
-        </form>
-        <div id="mensagem"></div>
-      </div>
-      <div class="clear"></div>
     </div>
   </div>
 
+  <!-- CABEÇALHO -->
+  <div class="main-header">
+    <div class="container">
+      <div class="logo-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
+        <div class="titulos-prefeitura">
+          <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
+          <span class="subtitulo">Solicitação de Croqui Online</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="nav-menu">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="solicitar.html" class="active">Solicitar Croqui</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="cadastro.html">Cadastro</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL (RENDERIZADO DINAMICAMENTE) -->
+  <div id="app"></div>
+
+  <!-- RODAPÉ -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-contact">
+          <a href="https://www.botucatu.sp.gov.br" target="_blank"><i class="fas fa-globe"></i> Site oficial</a>
+          <span><i class="fas fa-phone-alt"></i> (14) 3811-1400</span>
+          <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
+          <span><i class="fas fa-clock"></i> Segunda a sexta, 08h às 16h30</span>
+        </div>
+        <div style="color:#94a3b8; font-size:13px;">
+          © 2026 – Prefeitura Municipal de Botucatu
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT PRINCIPAL (MÓDULO) -->
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
-    // ==================== MÁSCARAS ====================
-    function formatIPTU(v) {
-      return v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{4})(\d)/, '$1.$2').replace(/(\d{4})\d+?$/, '$1');
-    }
-    document.getElementById('iptu')?.addEventListener('input', e => e.target.value = formatIPTU(e.target.value));
-    document.getElementById('quadra')?.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0,5));
-    document.getElementById('lote')?.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0,4));
+    // ----- ELEMENTOS -----
+    const app = document.getElementById('app');
 
-    // ==================== VERIFICA LOGIN ====================
+    // ----- UTILITÁRIOS -----
+    function formatIPTU(value) {
+      return value.replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '$1.$2')
+        .replace(/(\d{4})(\d)/, '$1.$2')
+        .replace(/(\d{4})\d+?$/, '$1');
+    }
+
+    // ----- VERIFICAÇÃO DE LOGIN -----
     function getUsuario() {
       const userStr = localStorage.getItem('user');
       if (!userStr) return null;
-      try { return JSON.parse(userStr); } catch { return null; }
+      try {
+        return JSON.parse(userStr);
+      } catch {
+        return null;
+      }
     }
 
     const usuario = getUsuario();
-    const loginDiv = document.getElementById('loginVerification');
-    const mainDiv = document.getElementById('mainContent');
 
     if (!usuario) {
-      loginDiv.style.display = 'block';
-      mainDiv.style.display = 'none';
-      throw new Error('Usuário não logado'); // interrompe a execução
+      // Mostra tela de login necessário
+      app.innerHTML = `
+        <div class="login-verification">
+          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+          <h3 style="margin-bottom: 8px;">Você não está logado</h3>
+          <p style="margin-bottom: 20px;">Para solicitar um croqui, é necessário fazer login.</p>
+          <a href="login.html">Fazer login</a>
+          <p style="margin-top: 16px;">Ainda não tem cadastro? <a href="cadastro.html" style="color: #2563eb; text-decoration: underline;">Cadastre-se</a></p>
+        </div>
+      `;
     } else {
-      loginDiv.style.display = 'none';
-      mainDiv.style.display = 'block';
+      // ----- RENDERIZA O DASHBOARD COMPLETO -----
+      renderDashboard(usuario);
     }
 
-    // ==================== CARREGA DADOS DO USUÁRIO ====================
-    (async () => {
-      document.getElementById('nomeUsuario').textContent = usuario.nome || 'Usuário';
-      document.getElementById('cpfUsuario').textContent = usuario.cpf || '';
-      
-      const { data, error } = await supabase
+    async function renderDashboard(user) {
+      // Buscar dados completos do munícipe na tabela municipes
+      const { data: municipe, error: municipeError } = await supabase
         .from('municipes')
-        .select('email')
-        .eq('cpf', usuario.cpf)
-        .maybeSingle();
-      document.getElementById('emailUsuario').textContent = data?.email || 'Não informado';
-    })();
+        .select('*')
+        .eq('cpf', user.cpf)
+        .single();
 
-    // ==================== CARREGA NOTIFICAÇÕES ====================
-    (async () => {
-      const div = document.getElementById('notificacoes');
-      const { data, error } = await supabase
+      if (municipeError) {
+        console.error('Erro ao buscar munícipe:', municipeError);
+        app.innerHTML = `<div class="error-message auth-message">Erro ao carregar dados do usuário.</div>`;
+        return;
+      }
+
+      // Buscar solicitações do usuário
+      const { data: solicitacoes, error: solError } = await supabase
         .from('croqui_requests')
         .select('*')
-        .eq('user_id', usuario.id)
+        .eq('user_id', municipe.id)
         .order('created_at', { ascending: false });
-      
-      if (error) {
-        div.innerHTML = '<p class="error-box">Erro ao carregar notificações.</p>';
-        return;
+
+      if (solError) {
+        console.error('Erro ao buscar solicitações:', solError);
       }
-      if (!data?.length) {
-        div.innerHTML = '<p>Você ainda não fez nenhuma solicitação.</p>';
-        return;
-      }
-      
-      let html = '';
-      data.forEach(s => {
-        const status = {
-          pending: '⏳ Pendente',
-          approved: '✅ Aprovado',
-          denied: '❌ Negado',
-          forwarded: '↪️ Encaminhado'
-        }[s.status] || s.status;
-        html += `<div class="notificacao status-${s.status}">
-          <strong>${s.logradouro}</strong><br>
-          <span>${status}</span><br>
-          <small>${new Date(s.created_at).toLocaleDateString('pt-BR')}</small>
-        </div>`;
+
+      // ----- MONTAGEM DO HTML -----
+      app.innerHTML = `
+        <div class="dashboard">
+          <!-- SIDEBAR -->
+          <div class="sidebar">
+            <div class="perfil-header">
+              <div class="perfil-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="perfil-nome">
+                <h3>${municipe.full_name || 'Usuário'}</h3>
+              </div>
+            </div>
+            <div class="perfil-dados">
+              <h4><i class="fas fa-id-card"></i> Meus dados</h4>
+              <div class="dados-lista">
+                <div class="dado-item">
+                  <span class="dado-label">CPF:</span>
+                  <span class="dado-value">${municipe.cpf || '—'}</span>
+                </div>
+                <div class="dado-item">
+                  <span class="dado-label">Nome do pai:</span>
+                  <span class="dado-value">${municipe.father_name || '—'}</span>
+                </div>
+                <div class="dado-item">
+                  <span class="dado-label">Nome da mãe:</span>
+                  <span class="dado-value">${municipe.mother_name || '—'}</span>
+                </div>
+                <div class="dado-item">
+                  <span class="dado-label">Celular:</span>
+                  <span class="dado-value">${municipe.phone || '—'}</span>
+                </div>
+                <div class="dado-item">
+                  <span class="dado-label">E-mail:</span>
+                  <span class="dado-value">${municipe.email || '—'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="notificacoes">
+              <h4><i class="fas fa-bell"></i> Notificações</h4>
+              <div class="notificacoes-lista" id="notificacoesLista">
+                ${solicitacoes && solicitacoes.length > 0 ? solicitacoes.map(s => {
+                  const statusLabel = {
+                    pending: '⏳ Pendente',
+                    approved: '✅ Aprovado',
+                    denied: '❌ Negado',
+                    forwarded: '↪️ Encaminhado'
+                  }[s.status] || s.status;
+                  return `
+                    <div class="notificacao-item status-${s.status}">
+                      <div class="notificacao-status">${statusLabel}</div>
+                      <div class="notificacao-endereco">${s.logradouro || 'Endereço não informado'}</div>
+                      <div class="notificacao-data">${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+                    </div>
+                  `;
+                }).join('') : '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>'}
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTEÚDO PRINCIPAL (FORMULÁRIO) -->
+          <div class="main-content">
+            <h2>Solicitar Croqui</h2>
+            <p class="subtitulo">Preencha os dados do imóvel para solicitar o croqui oficial.</p>
+            
+            <form id="solicitacaoForm" class="form-croqui">
+              <div class="form-grid">
+                <!-- IPTU -->
+                <div class="form-group">
+                  <label>
+                    Identificação do imóvel
+                    <span class="tooltip-icon" data-tooltip="Número do IPTU do imóvel (formato XX.XXXX.XXXX)">
+                      <i class="fas fa-question-circle"></i>
+                    </span>
+                  </label>
+                  <input type="text" id="iptu" class="form-control" placeholder="00.0000.0000" maxlength="12" required>
+                </div>
+
+                <!-- Documento de posse (upload) -->
+                <div class="form-group full-width">
+                  <label>
+                    Documento de comprovação de posse
+                    <span class="tooltip-icon" data-tooltip="Matrícula, Escritura ou contrato de compra e venda validado por cartório ou assinatura digital">
+                      <i class="fas fa-question-circle"></i>
+                    </span>
+                  </label>
+                  <div class="file-upload" id="fileUploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Clique para enviar o documento</span>
+                    <small>PDF, JPG ou PNG (máx. 10MB)</small>
+                    <input type="file" id="documentoFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" required>
+                  </div>
+                </div>
+
+                <!-- Quadra -->
+                <div class="form-group">
+                  <label>Quadra</label>
+                  <input type="text" id="quadra" class="form-control" maxlength="5" placeholder="Apenas números (máx 5)" required>
+                </div>
+
+                <!-- Lote -->
+                <div class="form-group">
+                  <label>Lote</label>
+                  <input type="text" id="lote" class="form-control" maxlength="4" placeholder="Apenas números (máx 4)" required>
+                </div>
+
+                <!-- Logradouro -->
+                <div class="form-group full-width">
+                  <label>Logradouro</label>
+                  <input type="text" id="logradouro" class="form-control" placeholder="Rua, Avenida, etc." required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-submit" id="btnEnviar">
+                <i class="fas fa-paper-plane"></i> Enviar solicitação
+              </button>
+              <div id="solicitacaoMessage" class="auth-message"></div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      // ----- APLICAR MÁSCARAS -----
+      document.getElementById('iptu').addEventListener('input', function(e) {
+        e.target.value = formatIPTU(e.target.value);
       });
-      div.innerHTML = html;
-    })();
+      document.getElementById('quadra').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+      });
+      document.getElementById('lote').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+      });
 
-    // ==================== ENVIO DO FORMULÁRIO ====================
-    document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const msg = document.getElementById('mensagem');
-      msg.innerHTML = '';
-      const btn = document.getElementById('btnEnviar');
-      
-      const iptu = document.getElementById('iptu').value.trim();
-      const quadra = document.getElementById('quadra').value.trim();
-      const lote = document.getElementById('lote').value.trim();
-      const logradouro = document.getElementById('logradouro').value.trim();
-      const file = document.getElementById('documento').files[0];
+      // ----- UPLOAD DE ARQUIVO (ÁREA CLICÁVEL) -----
+      const fileArea = document.getElementById('fileUploadArea');
+      const fileInput = document.getElementById('documentoFile');
+      fileArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+        const span = fileArea.querySelector('span');
+        span.textContent = fileInput.files[0]?.name || 'Clique para enviar o documento';
+      });
 
-      // validações
-      if (!iptu || iptu.replace(/\D/g, '').length < 10) {
-        msg.innerHTML = '<div class="error-box">IPTU inválido.</div>'; return;
-      }
-      if (!quadra) { msg.innerHTML = '<div class="error-box">Preencha a quadra.</div>'; return; }
-      if (!lote) { msg.innerHTML = '<div class="error-box">Preencha o lote.</div>'; return; }
-      if (!logradouro) { msg.innerHTML = '<div class="error-box">Preencha o logradouro.</div>'; return; }
-      if (!file) { msg.innerHTML = '<div class="error-box">Selecione um documento.</div>'; return; }
+      // ----- SUBMISSÃO DO FORMULÁRIO -----
+      document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-      btn.disabled = true;
-      btn.textContent = 'Enviando...';
+        const iptu = document.getElementById('iptu').value.trim();
+        const quadra = document.getElementById('quadra').value.trim();
+        const lote = document.getElementById('lote').value.trim();
+        const logradouro = document.getElementById('logradouro').value.trim();
+        const file = fileInput.files[0];
 
-      try {
-        console.log('📤 Iniciando upload...');
-        
-        // 1. Upload do arquivo
-        const fileName = `${usuario.id}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('documentos')
-          .upload(fileName, file);
+        const msgDiv = document.getElementById('solicitacaoMessage');
+        msgDiv.className = 'auth-message';
+        msgDiv.innerHTML = '';
+        const btn = document.getElementById('btnEnviar');
 
-        if (uploadError) {
-          console.error('❌ Upload error:', uploadError);
-          throw new Error(`Upload falhou: ${uploadError.message}`);
+        // Validações
+        if (!iptu || iptu.replace(/\D/g, '').length < 10) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'IPTU inválido. Use o formato XX.XXXX.XXXX.';
+          return;
+        }
+        if (!quadra) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Preencha a quadra.';
+          return;
+        }
+        if (!lote) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Preencha o lote.';
+          return;
+        }
+        if (!logradouro) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Preencha o logradouro.';
+          return;
+        }
+        if (!file) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Selecione o documento de posse.';
+          return;
         }
 
-        // 2. URL pública
-        const { data: urlData } = supabase.storage
-          .from('documentos')
-          .getPublicUrl(fileName);
-        const documentUrl = urlData.publicUrl;
-        console.log('✅ Upload OK, URL:', documentUrl);
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-        // 3. Inserir solicitação
-        const { error: insertError } = await supabase
-          .from('croqui_requests')
-          .insert([{
-            user_id: usuario.id,
-            iptu,
-            document_url: documentUrl,
-            quadra,
-            lote,
-            logradouro,
-            status: 'pending'
-          }]);
+        try {
+          // 1. Upload do arquivo
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${municipe.id}/${Date.now()}.${fileExt}`;
 
-        if (insertError) {
-          console.error('❌ Insert error:', insertError);
-          throw new Error(`Erro ao salvar: ${insertError.message}`);
+          const { error: uploadError } = await supabase.storage
+            .from('documentos')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Erro upload:', uploadError);
+            throw new Error(`Falha no upload: ${uploadError.message}`);
+          }
+
+          // 2. URL pública
+          const { data: urlData } = supabase.storage
+            .from('documentos')
+            .getPublicUrl(fileName);
+          const documentUrl = urlData.publicUrl;
+
+          // 3. Inserir solicitação
+          const { error: insertError } = await supabase
+            .from('croqui_requests')
+            .insert([{
+              user_id: municipe.id,
+              iptu: iptu,
+              document_url: documentUrl,
+              quadra: quadra,
+              lote: lote,
+              logradouro: logradouro,
+              status: 'pending'
+            }]);
+
+          if (insertError) {
+            console.error('Erro insert:', insertError);
+            throw new Error(`Erro ao salvar solicitação: ${insertError.message}`);
+          }
+
+          // 4. Sucesso!
+          msgDiv.className = 'auth-message success-message';
+          msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Solicitação enviada com sucesso!';
+          
+          // Limpar formulário
+          document.getElementById('solicitacaoForm').reset();
+          fileArea.querySelector('span').textContent = 'Clique para enviar o documento';
+          
+          // Recarregar notificações após 1,5s
+          setTimeout(() => {
+            renderDashboard(user);
+          }, 1500);
+        } catch (error) {
+          console.error(error);
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = error.message || 'Erro ao enviar solicitação. Tente novamente.';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar solicitação';
         }
-
-        msg.innerHTML = '<div class="success-box">✅ Solicitação enviada com sucesso!</div>';
-        document.getElementById('solicitacaoForm').reset();
-        
-        // Recarregar notificações
-        setTimeout(() => location.reload(), 1500);
-      } catch (err) {
-        console.error(err);
-        msg.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
-        btn.disabled = false;
-        btn.textContent = 'Enviar solicitação';
-      }
-    });
+      });
+    }
   </script>
 </body>
 </html>
