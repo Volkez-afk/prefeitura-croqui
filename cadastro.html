@@ -139,6 +139,7 @@
       </div>
     </div>
   </footer>
+
   <script>
     const SUPABASE_URL = 'https://wtgxzswahhwqjuasnrie.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_uMEfaVJdfXEt264vEZVrFA_GoJDC1gk';
@@ -156,16 +157,19 @@
       cpf = cpf.replace(/\D/g, '');
       if (cpf.length !== 11) return false;
       if (/^(\d)\1{10}$/.test(cpf)) return false;
+      
       let sum = 0, remainder;
       for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
       remainder = (sum * 10) % 11;
       if (remainder === 10 || remainder === 11) remainder = 0;
       if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+      
       sum = 0;
       for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
       remainder = (sum * 10) % 11;
       if (remainder === 10 || remainder === 11) remainder = 0;
       if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+      
       return true;
     }
 
@@ -229,6 +233,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
 
+        // 1. Verificar se CPF já existe
         const { data: cpfExistente, error: cpfError } = await supabase
           .from('municipes')
           .select('cpf')
@@ -244,6 +249,7 @@
           return;
         }
 
+        // 2. Criar usuário no Auth
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: email,
           password: senha,
@@ -252,6 +258,7 @@
         if (signUpError) throw signUpError;
         if (!signUpData.user) throw new Error('Erro ao criar usuário');
 
+        // 3. Inserir dados na tabela municipes
         const { error: insertError } = await supabase
           .from('municipes')
           .insert([{
@@ -266,6 +273,7 @@
 
         if (insertError) throw insertError;
 
+        // 4. Sucesso! Redireciona para login
         msgDiv.className = 'auth-message success-message';
         msgDiv.textContent = 'Cadastro realizado com sucesso! Redirecionando para login...';
         
@@ -275,7 +283,7 @@
       } catch (error) {
         console.error(error);
         msgDiv.className = 'auth-message error-message';
-        msgDiv.textContent = error.message;
+        msgDiv.textContent = error.message || 'Erro ao cadastrar. Tente novamente.';
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar';
       }
