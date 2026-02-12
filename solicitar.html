@@ -913,6 +913,7 @@
 
     // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM AGENDAMENTOS) ==========
    // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM DATA E HORA DO AGENDAMENTO) ==========
+// ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM DATA E HORA DO AGENDAMENTO) ==========
 async function gerarNotificacoes(solicitacoes) {
   if (!solicitacoes || solicitacoes.length === 0) {
     return '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>';
@@ -948,6 +949,51 @@ async function gerarNotificacoes(solicitacoes) {
         </div>
       `;
     }
+    
+    // ========== BUSCAR AGENDAMENTOS (DATA E HORA) ==========
+    let agendamentoHTML = '';
+    if (s.status === 'approved' || s.status === 'forwarded') {
+      const agendamentos = await buscarAgendamentos(s.id);
+      
+      if (agendamentos.length > 0) {
+        agendamentoHTML = '<div style="margin-top: 8px;">';
+        agendamentos.forEach(ag => {
+          const dataFormatada = new Date(ag.scheduled_date).toLocaleDateString('pt-BR');
+          const horario = ag.scheduled_time || 'horário não informado';
+          const empresa = ag.concessionaria_tipo === 'sabesp' ? 'SABESP' : 'CPFL';
+          agendamentoHTML += `
+            <div class="agendamento-info">
+              <i class="fas fa-calendar-alt"></i> <strong>${empresa}:</strong> ${dataFormatada}
+              <i class="fas fa-clock" style="margin-left: 8px;"></i> ${horario}
+            </div>
+          `;
+        });
+        agendamentoHTML += '</div>';
+      } else {
+        agendamentoHTML = `
+          <div style="margin-top: 8px; font-size: 13px; color: #64748b;">
+            <i class="fas fa-clock"></i> Aguardando agendamento
+          </div>
+        `;
+      }
+    }
+    
+    html += `
+      <div class="notificacao-item status-${s.status}">
+        <div class="notificacao-status">${statusLabel}</div>
+        <div class="notificacao-endereco">
+          ${servicoIcon ? `<span style="margin-right: 6px;">${servicoIcon}</span>` : ''}
+          ${s.logradouro || 'Endereço não informado'}
+        </div>
+        <div class="notificacao-data">${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+        ${motivoLink}
+        ${agendamentoHTML}
+      </div>
+    `;
+  }
+  
+  return html;
+}
     
     // ========== BUSCAR AGENDAMENTOS (DATA E HORA) ==========
     let agendamentoHTML = '';
