@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Servidor - Prefeitura de Botucatu</title>
+  <title>Solicitar Croqui - Prefeitura de Botucatu</title>
 
   <!-- Fontes e ícones -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -206,91 +206,62 @@
       font-weight: 600;
       color: #0f172a;
     }
-
-    /* ----- LISTA DE PENDENTES (ESTILO NOTIFICAÇÕES) ----- */
-    .pending-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .notificacoes-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       max-height: 400px;
       overflow-y: auto;
     }
-    .pending-list li {
+    .notificacao-item {
       background: #f8fafc;
       border-radius: 12px;
       padding: 16px;
-      margin-bottom: 12px;
-      border-left: 4px solid #f59e0b;
-      cursor: pointer;
+      border-left: 4px solid;
       transition: all 0.2s;
     }
-    .pending-list li:hover {
+    .notificacao-item:hover {
       background: #f1f5f9;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
-    .pending-list li.selected {
-      background: #e0f2fe;
-      border-left-color: #2563eb;
+    .status-pending { border-left-color: #f59e0b; }
+    .status-approved { border-left-color: #10b981; }
+    .status-denied { border-left-color: #ef4444; }
+    .status-forwarded { border-left-color: #3b82f6; }
+    .notificacao-status {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
-    .pending-list strong {
+    .notificacao-endereco {
+      font-size: 14px;
       color: #0f172a;
-      font-size: 15px;
+      margin-bottom: 4px;
     }
-    .pending-list small {
-      color: #64748b;
+    .notificacao-data {
       font-size: 12px;
+      color: #64748b;
+    }
+    .agendamento-info {
+      margin-top: 8px;
+      font-size: 13px;
+      padding: 6px 10px;
+      background: #e0f2fe;
+      border-radius: 6px;
+      color: #0369a1;
+    }
+    .motivo-link {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .motivo-link a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+    .motivo-link a:hover {
+      color: #1d4ed8;
     }
 
-    /* ----- BOTÕES ----- */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 15px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background-color: #2563eb;
-      color: white;
-    }
-    .btn-primary:hover {
-      background-color: #1d4ed8;
-      transform: scale(1.02);
-    }
-    .btn-approve {
-      background-color: #10b981;
-      color: white;
-    }
-    .btn-approve:hover {
-      background-color: #059669;
-      transform: scale(1.02);
-    }
-    .btn-deny {
-      background-color: #ef4444;
-      color: white;
-    }
-    .btn-deny:hover {
-      background-color: #dc2626;
-      transform: scale(1.02);
-    }
-    .btn-outline {
-      background-color: white;
-      border: 1px solid #cbd5e1;
-      color: #1e293b;
-    }
-    .btn-outline:hover {
-      background-color: #f1f5f9;
-    }
-
-    /* ----- ÁREA DE CONTEÚDO ----- */
+    /* ----- CONTEÚDO PRINCIPAL (FORMULÁRIO) ----- */
     .main-content {
       flex: 1;
       background: white;
@@ -299,105 +270,160 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.03);
       border: 1px solid #e2e8f0;
     }
-
-    /* ----- DETALHES DA SOLICITAÇÃO ----- */
-    .detail-card {
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
+    .main-content h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0a4b6e;
+      margin-bottom: 8px;
     }
-    .detail-row {
-      display: flex;
-      margin-bottom: 12px;
-    }
-    .detail-label {
-      font-weight: 600;
+    .main-content .subtitulo {
       color: #475569;
-      width: 200px;
-      flex-shrink: 0;
-    }
-    .detail-value {
-      color: #0f172a;
+      margin-bottom: 32px;
     }
 
-    /* ----- ÁREA DE UPLOAD E TEXTO ----- */
-    .upload-area {
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      background: #f8fafc;
-      margin-top: 16px;
-      cursor: pointer;
+    /* ----- FORMULÁRIO ----- */
+    .form-croqui {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
-    .upload-area:hover {
-      border-color: #2563eb;
-      background: #eff6ff;
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
     }
-    textarea {
-      width: 100%;
-      padding: 12px;
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tooltip-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: help;
+    }
+    .tooltip-icon i {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .tooltip-icon:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 150%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 10;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .form-control {
+      padding: 12px 16px;
       border: 1px solid #cbd5e1;
       border-radius: 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      resize: vertical;
+      font-size: 15px;
+      transition: border 0.2s;
+      width: 100%;
     }
-    textarea:focus {
+    .form-control:focus {
       outline: none;
       border-color: #2563eb;
       box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
-
-    /* ----- TABELA DE ATENDIDAS ----- */
-    .table-responsive {
-      overflow-x: auto;
+    .file-upload {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .file-upload:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .file-upload i {
+      font-size: 32px;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+    .file-upload span {
+      display: block;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .file-upload small {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 24px;
+      padding: 8px 0;
+      flex-wrap: wrap;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
+      cursor: pointer;
+    }
+    .btn-submit {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: fit-content;
       margin-top: 16px;
     }
-    th {
-      text-align: left;
-      padding: 12px;
-      background: #f1f5f9;
-      color: #0f172a;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 14px;
-    }
-    tr:hover td {
-      background: #f8fafc;
-    }
-    .status-link {
-      color: #2563eb;
-      text-decoration: underline;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .status-link:hover {
-      color: #1d4ed8;
+    .btn-submit:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.02);
     }
 
     /* ----- MENSAGENS ----- */
-    .alert {
-      padding: 16px;
-      border-radius: 12px;
+    .auth-message {
       margin-top: 20px;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
     }
-    .alert-success {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .alert-error {
+    .error-message {
       background: #fee2e2;
       color: #b91c1c;
+    }
+    .success-message {
+      background: #dcfce7;
+      color: #166534;
     }
 
     /* ========== RODAPÉ ========== */
@@ -420,22 +446,16 @@
       flex-wrap: wrap;
       justify-content: center;
       color: #cbd5e1;
-      font-size: 15px;
     }
     .footer-contact a {
       color: #cbd5e1;
       text-decoration: none;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 6px;
-      transition: color 0.2s;
     }
     .footer-contact a:hover {
       color: white;
-    }
-    .footer-bottom {
-      color: #94a3b8;
-      font-size: 13px;
     }
 
     /* ========== RESPONSIVIDADE ========== */
@@ -446,24 +466,48 @@
       .sidebar {
         width: 100%;
       }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: span 1;
+      }
     }
     @media (max-width: 640px) {
       .footer-contact {
         flex-direction: column;
         gap: 12px;
       }
-      .detail-row {
+      .radio-group {
         flex-direction: column;
-        gap: 4px;
+        gap: 12px;
       }
-      .detail-label {
-        width: 100%;
-      }
+    }
+
+    /* ----- Verificação de login ----- */
+    .login-verification {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 40px auto;
+      max-width: 600px;
+      text-align: center;
+    }
+    .login-verification a {
+      display: inline-block;
+      margin-top: 12px;
+      background: #2563eb;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <!-- ========== BARRA DE ACESSIBILIDADE ========== -->
+  <!-- BARRA DE ACESSIBILIDADE -->
   <div class="accessibility-bar">
     <div class="container">
       <div class="accessibility-links">
@@ -476,137 +520,35 @@
     </div>
   </div>
 
-  <!-- ========== CABEÇALHO ========== -->
+  <!-- CABEÇALHO -->
   <div class="main-header">
     <div class="container">
       <div class="logo-area">
         <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
         <div class="titulos-prefeitura">
           <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
-          <span class="subtitulo">Painel do Servidor</span>
+          <span class="subtitulo">Solicitação de Croqui Online</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ========== MENU ========== -->
+  <!-- MENU -->
   <div class="nav-menu">
     <div class="container">
       <ul class="nav-links">
         <li><a href="index.html">Início</a></li>
-        <li><a href="login.html">Munícipe</a></li>
-        <li><a href="servidor-login.html" class="active">Servidor</a></li>
-        <li><a href="admin-login.html">Administrador</a></li>
-        <li><a href="concess-login.html">SABESP/CPFL</a></li>
+        <li><a href="solicitar.html" class="active">Solicitar Croqui</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="cadastro.html">Cadastro</a></li>
       </ul>
     </div>
   </div>
 
-  <!-- ========== CONTEÚDO PRINCIPAL ========== -->
-  <div id="mainContent" style="display: none;">
-    <div class="dashboard">
-      <!-- ========== SIDEBAR ========== -->
-      <div class="sidebar">
-        <div class="perfil-header">
-          <div class="perfil-avatar">
-            <i class="fas fa-user-tie"></i>
-          </div>
-          <div class="perfil-nome">
-            <h3 id="servidorNome">Carregando...</h3>
-          </div>
-        </div>
-        <div class="perfil-dados">
-          <h4><i class="fas fa-id-card"></i> Dados do Servidor</h4>
-          <div class="dados-lista">
-            <div class="dado-item">
-              <span class="dado-label">RI:</span>
-              <span class="dado-value" id="servidorRI"></span>
-            </div>
-          </div>
-        </div>
+  <!-- CONTEÚDO PRINCIPAL (RENDERIZADO DINAMICAMENTE) -->
+  <div id="app"></div>
 
-        <div class="notificacoes">
-          <h4><i class="fas fa-clock"></i> Solicitações Pendentes</h4>
-          <ul id="pendingList" class="pending-list">
-            <li>Carregando...</li>
-          </ul>
-        </div>
-
-        <div style="margin-top: 20px;">
-          <button id="viewAttendedBtn" class="btn btn-primary" style="width:100%;">
-            <i class="fas fa-history"></i> Ver Solicitações Atendidas
-          </button>
-        </div>
-      </div>
-
-      <!-- ========== CONTEÚDO PRINCIPAL ========== -->
-      <div class="main-content">
-        <!-- Área de detalhes da solicitação -->
-        <div id="requestDetailsArea">
-          <div id="requestDetails">
-            <h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2>
-            <p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>
-          </div>
-
-          <div id="actionArea" style="display: none; margin-top: 24px;">
-            <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-              <button id="approveBtn" class="btn btn-approve">
-                <i class="fas fa-check-circle"></i> Deferir (aprovar)
-              </button>
-              <button id="denyBtn" class="btn btn-deny">
-                <i class="fas fa-times-circle"></i> Indeferir (negar)
-              </button>
-            </div>
-            
-            <div id="approveArea" style="display: none;">
-              <h4 style="color: #0f172a; margin-bottom: 12px;">📎 Anexar Croqui (Deferir)</h4>
-              <div class="upload-area" id="fileUploadArea">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #2563eb;"></i>
-                <p style="font-weight: 600; margin: 8px 0;">Clique para enviar o croqui</p>
-                <small style="color: #64748b;">PDF, JPG ou PNG (máx. 10MB)</small>
-                <input type="file" id="croquiFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-              </div>
-              <button id="confirmApproveBtn" class="btn btn-approve" style="margin-top: 20px;">
-                <i class="fas fa-paper-plane"></i> Confirmar Deferimento
-              </button>
-            </div>
-            
-            <div id="denyArea" style="display: none;">
-              <h4 style="color: #0f172a; margin-bottom: 12px;">📝 Motivo do Indeferimento</h4>
-              <textarea id="denyReason" rows="4" placeholder="Descreva o motivo do indeferimento..."></textarea>
-              <button id="confirmDenyBtn" class="btn btn-deny" style="margin-top: 20px;">
-                <i class="fas fa-paper-plane"></i> Confirmar Indeferimento
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Área da tabela de atendidas (inicialmente oculta) -->
-        <div id="attendedTableArea" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2 style="color: #0a4b6e;">Todas as Solicitações Atendidas</h2>
-            <button id="backToDetailsBtn" class="btn btn-outline">
-              <i class="fas fa-arrow-left"></i> Voltar para detalhes
-            </button>
-          </div>
-          <div id="attendedTableContainer" class="table-responsive">
-            <!-- Tabela será inserida aqui -->
-          </div>
-        </div>
-
-        <div id="message"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== BOTÃO DE LOGOUT FLUTUANTE ========== -->
-  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
-    <button id="logoutBtn" class="btn" style="background: #ef4444; color: white; border-radius: 40px; padding: 12px 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      <i class="fas fa-sign-out-alt"></i> Sair
-    </button>
-  </div>
-
-  <!-- ========== RODAPÉ ========== -->
+  <!-- RODAPÉ -->
   <footer>
     <div class="container">
       <div class="footer-content">
@@ -616,8 +558,8 @@
           <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
           <span><i class="fas fa-clock"></i> Segunda a sexta, 08h às 16h30</span>
         </div>
-        <div class="footer-bottom">
-          © 2026 – Prefeitura Municipal de Botucatu. Todos os direitos reservados.
+        <div style="color:#94a3b8; font-size:13px;">
+          © 2026 – Prefeitura Municipal de Botucatu
         </div>
       </div>
     </div>
@@ -626,451 +568,296 @@
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
-    // ========== VERIFICAÇÃO DE LOGIN ==========
-    const servidorSession = localStorage.getItem('servidor');
-    const mainContent = document.getElementById('mainContent');
+    const app = document.getElementById('app');
 
-    if (!servidorSession) {
-      window.location.href = 'servidor-login.html';
+    function formatIPTU(value) {
+      return value.replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '$1.$2')
+        .replace(/(\d{4})(\d)/, '$1.$2')
+        .replace(/(\d{4})\d+?$/, '$1');
     }
 
-    let servidor;
-    try {
-      servidor = JSON.parse(servidorSession);
-      const nomeEl = document.getElementById('servidorNome');
-      const riEl = document.getElementById('servidorRI');
-      if (nomeEl) nomeEl.textContent = servidor.nome || 'Servidor';
-      if (riEl) riEl.textContent = servidor.ri || '';
-    } catch (e) {
-      localStorage.removeItem('servidor');
-      window.location.href = 'servidor-login.html';
+    function getUsuario() {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      try { return JSON.parse(userStr); } catch { return null; }
     }
 
-    if (mainContent) mainContent.style.display = 'block';
+    const usuario = getUsuario();
 
-    // ========== VARIÁVEIS GLOBAIS ==========
-    let selectedRequestId = null;
-    let selectedServico = null;
+    if (!usuario) {
+      app.innerHTML = `
+        <div class="login-verification">
+          <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+          <h3 style="margin-bottom: 8px;">Você não está logado</h3>
+          <p style="margin-bottom: 20px;">Para solicitar um croqui, é necessário fazer login.</p>
+          <a href="login.html">Fazer login</a>
+          <p style="margin-top: 16px;">Ainda não tem cadastro? <a href="cadastro.html" style="color: #2563eb; text-decoration: underline;">Cadastre-se</a></p>
+        </div>
+      `;
+    } else {
+      renderDashboard(usuario);
+    }
 
-    // ========== FUNÇÕES AUXILIARES ==========
-    async function buscarMunicipePorUserId(userId) {
+    async function buscarAgendamentos(requestId) {
       const { data, error } = await supabase
+        .from('concessao_tarefas')
+        .select('*')
+        .eq('request_id', requestId)
+        .eq('status', 'scheduled')
+        .order('scheduled_date', { ascending: true });
+      if (error) return [];
+      return data || [];
+    }
+
+    async function renderDashboard(user) {
+      const { data: municipe, error: municipeError } = await supabase
         .from('municipes')
         .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      if (error) {
-        console.error('Erro ao buscar munícipe:', error);
-        return null;
-      }
-      return data;
-    }
-
-    async function buscarServidorPorId(servidorId) {
-      if (!servidorId) return null;
-      const { data, error } = await supabase
-        .from('servidores')
-        .select('nome, ri')
-        .eq('id', servidorId)
-        .maybeSingle();
-      if (error) {
-        console.error('Erro ao buscar servidor:', error);
-        return null;
-      }
-      return data;
-    }
-
-    // ========== CARREGAR PENDENTES ==========
-    async function carregarPendentes() {
-      const listEl = document.getElementById('pendingList');
-      if (!listEl) return;
-
-      const { data, error } = await supabase
-        .from('croqui_requests')
-        .select('id, user_id, iptu, logradouro, quadra, lote, created_at')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar pendentes:', error);
-        listEl.innerHTML = '<li style="color:red;">Erro ao carregar pendentes.</li>';
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        listEl.innerHTML = '<li>Nenhuma solicitação pendente.</li>';
-        return;
-      }
-
-      let html = '';
-      for (const req of data) {
-        const municipe = await buscarMunicipePorUserId(req.user_id);
-        const nome = municipe?.full_name || 'Desconhecido';
-        html += `
-          <li onclick="window.selecionarSolicitacao('${req.id}')" class="${selectedRequestId === req.id ? 'selected' : ''}">
-            <strong>${nome}</strong><br>
-            <small>${req.logradouro || ''} - ${req.created_at ? new Date(req.created_at).toLocaleDateString('pt-BR') : ''}</small>
-          </li>
-        `;
-      }
-      listEl.innerHTML = html;
-    }
-
-    // ========== SELECIONAR SOLICITAÇÃO (ATUALIZADO COM CAMPO ÚNICO) ==========
-    window.selecionarSolicitacao = async (id) => {
-      const attendedArea = document.getElementById('attendedTableArea');
-      const detailsArea = document.getElementById('requestDetailsArea');
-      if (attendedArea) attendedArea.style.display = 'none';
-      if (detailsArea) detailsArea.style.display = 'block';
-
-      selectedRequestId = id;
-      
-      const { data: request, error } = await supabase
-        .from('croqui_requests')
-        .select('*')
-        .eq('id', id)
+        .eq('cpf', user.cpf)
         .single();
 
-      const detailsEl = document.getElementById('requestDetails');
-      if (!detailsEl) return;
-
-      if (error || !request) {
-        detailsEl.innerHTML = '<p style="color:red;">Erro ao carregar detalhes.</p>';
+      if (municipeError) {
+        app.innerHTML = `<div class="error-message auth-message">Erro ao carregar dados do usuário.</div>`;
         return;
       }
 
-      selectedServico = request.servico;
+      const { data: solicitacoes, error: solError } = await supabase
+        .from('croqui_requests')
+        .select('*')
+        .eq('user_id', municipe.id)
+        .order('created_at', { ascending: false });
 
-      const municipe = await buscarMunicipePorUserId(request.user_id);
-      
-      let servicoDisplay = '';
-      if (request.servico === 'agua') servicoDisplay = '💧 Água';
-      else if (request.servico === 'luz') servicoDisplay = '⚡ Luz';
-      else if (request.servico === 'agua_e_luz') servicoDisplay = '💧⚡ Água e Luz';
-      
-      // ✅ CAMPO UNIFICADO: ESQUINA OU MAIS DE UMA FRENTE?
-      const esquinaOuFrenteDisplay = request.esquina_ou_frente === 'sim' ? 'Sim' : 'Não';
-      
-      let html = `
-        <h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2>
-        <div class="detail-card">
-          <div class="detail-row"><span class="detail-label">Nome do munícipe:</span> <span class="detail-value">${municipe?.full_name || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Nome do pai:</span> <span class="detail-value">${municipe?.father_name || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Nome da mãe:</span> <span class="detail-value">${municipe?.mother_name || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">CPF:</span> <span class="detail-value">${municipe?.cpf || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Identificação do imóvel:</span> <span class="detail-value">${request.iptu || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Logradouro:</span> <span class="detail-value">${request.logradouro || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Quadra:</span> <span class="detail-value">${request.quadra || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Lote:</span> <span class="detail-value">${request.lote || ''}</span></div>
-          <!-- ✅ CAMPO ÚNICO: ESQUINA OU MAIS DE UMA FRENTE -->
-          <div class="detail-row"><span class="detail-label">Esquina ou mais de uma frente?</span> <span class="detail-value">${esquinaOuFrenteDisplay}</span></div>
-          <div class="detail-row"><span class="detail-label">Tipo de ligação:</span> <span class="detail-value">${servicoDisplay || ''}</span></div>
-          <div class="detail-row"><span class="detail-label">Documento de posse:</span> <span class="detail-value">${request.document_url ? `<a href="${request.document_url}" target="_blank" style="color: #2563eb;">Visualizar documento</a>` : 'Não enviado'}</span></div>
+      if (solError) console.error('Erro ao buscar solicitações:', solError);
+
+      app.innerHTML = `
+        <div class="dashboard">
+          <div class="sidebar">
+            <div class="perfil-header">
+              <div class="perfil-avatar"><i class="fas fa-user"></i></div>
+              <div class="perfil-nome"><h3>${municipe.full_name || 'Usuário'}</h3></div>
+            </div>
+            <div class="perfil-dados">
+              <h4><i class="fas fa-id-card"></i> Meus dados</h4>
+              <div class="dados-lista">
+                <div class="dado-item"><span class="dado-label">CPF:</span> <span class="dado-value">${municipe.cpf || '—'}</span></div>
+                <div class="dado-item"><span class="dado-label">Nome do pai:</span> <span class="dado-value">${municipe.father_name || '—'}</span></div>
+                <div class="dado-item"><span class="dado-label">Nome da mãe:</span> <span class="dado-value">${municipe.mother_name || '—'}</span></div>
+                <div class="dado-item"><span class="dado-label">Celular:</span> <span class="dado-value">${municipe.phone || '—'}</span></div>
+                <div class="dado-item"><span class="dado-label">E-mail:</span> <span class="dado-value">${municipe.email || '—'}</span></div>
+              </div>
+            </div>
+            <div class="notificacoes">
+              <h4><i class="fas fa-bell"></i> Notificações</h4>
+              <div class="notificacoes-lista" id="notificacoesLista">
+                ${await gerarNotificacoes(solicitacoes)}
+              </div>
+            </div>
+          </div>
+
+          <div class="main-content">
+            <h2>Solicitar Croqui</h2>
+            <p class="subtitulo">Preencha os dados do imóvel. Campos com * são obrigatórios.</p>
+            
+            <form id="solicitacaoForm" class="form-croqui">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>IPTU <span class="tooltip-icon" data-tooltip="Opcional - formato XX.XXXX.XXXX"><i class="fas fa-question-circle"></i></span></label>
+                  <input type="text" id="iptu" class="form-control" placeholder="00.0000.0000" maxlength="12">
+                </div>
+                <div class="form-group full-width">
+                  <label><span style="color: #dc2626;">*</span> Documento de posse</label>
+                  <div class="file-upload" id="fileUploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Clique para enviar</span>
+                    <small>PDF, JPG ou PNG</small>
+                    <input type="file" id="documentoFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Quadra</label>
+                  <input type="text" id="quadra" class="form-control" maxlength="5" placeholder="Ex: 15A">
+                </div>
+                <div class="form-group">
+                  <label>Lote</label>
+                  <input type="text" id="lote" class="form-control" maxlength="4" placeholder="Ex: 09B">
+                </div>
+                <div class="form-group full-width">
+                  <label>ESQUINA OU MAIS DE UMA FRENTE?</label>
+                  <div class="radio-group">
+                    <label><input type="radio" name="esquina_ou_frente" value="sim"> Sim</label>
+                    <label><input type="radio" name="esquina_ou_frente" value="nao" checked> Não</label>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label>Rua para ligação</label>
+                  <input type="text" id="logradouro" class="form-control" placeholder="Ex: Rua XV de Novembro">
+                </div>
+                <div class="form-group full-width">
+                  <label><span style="color: #dc2626;">*</span> Tipo de ligação</label>
+                  <div class="radio-group">
+                    <label><input type="radio" name="servico" value="agua" required> Água</label>
+                    <label><input type="radio" name="servico" value="luz" required> Luz</label>
+                    <label><input type="radio" name="servico" value="agua_e_luz" required> Água e Luz</label>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit" id="btnEnviar"><i class="fas fa-paper-plane"></i> Enviar</button>
+              <div id="solicitacaoMessage" class="auth-message"></div>
+            </form>
+          </div>
         </div>
       `;
 
-      detailsEl.innerHTML = html;
-      
-      const actionArea = document.getElementById('actionArea');
-      if (actionArea) actionArea.style.display = 'block';
-      
-      const approveArea = document.getElementById('approveArea');
-      const denyArea = document.getElementById('denyArea');
-      if (approveArea) approveArea.style.display = 'none';
-      if (denyArea) denyArea.style.display = 'none';
-      
-      await carregarPendentes();
-    };
-
-    // ========== CARREGAR TABELA DE ATENDIDAS ==========
-    async function carregarTabelaAtendidas() {
-      const container = document.getElementById('attendedTableContainer');
-      if (!container) return;
-      container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
-
-      const { data, error } = await supabase
-        .from('croqui_requests')
-        .select('*')
-        .in('status', ['approved', 'denied', 'forwarded'])
-        .order('analyzed_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar atendidas:', error);
-        container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding: 40px;">Nenhuma solicitação atendida ainda.</p>';
-        return;
-      }
-
-      let html = `<table>
-        <thead>
-          <tr>
-            <th>Munícipe</th>
-            <th>Endereço</th>
-            <th>Status</th>
-            <th>Servidor</th>
-            <th>RI</th>
-            <th>Data</th>
-          </tr>
-        </thead>
-        <tbody>
-      `;
-
-      for (const req of data) {
-        const municipe = await buscarMunicipePorUserId(req.user_id);
-        const servidorInfo = await buscarServidorPorId(req.analyzed_by);
-        
-        let statusCell = '';
-        
-        if (req.status === 'approved') {
-          statusCell = `<span class="status-link" onclick="window.open('${req.deferred_document_url || ''}', '_blank')" style="cursor: pointer; color: #10b981; font-weight: 600;">
-                          ✅ Deferido
-                        </span>`;
-        } else if (req.status === 'denied') {
-          const motivo = (req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-          statusCell = `<span class="status-link" onclick="alert('❌ Motivo do indeferimento:\\n\\n${motivo}')" style="cursor: pointer; color: #ef4444; font-weight: 600;">
-                          ❌ Indeferido
-                        </span>`;
-        } else if (req.status === 'forwarded') {
-          statusCell = `<span style="color: #2563eb;">↪️ Encaminhado</span>`;
-        } else {
-          statusCell = req.status;
-        }
-        
-        html += `<tr>
-          <td>${municipe?.full_name || '-'}</td>
-          <td>${req.logradouro || '-'}</td>
-          <td>${statusCell}</td>
-          <td>${servidorInfo?.nome || '-'}</td>
-          <td>${servidorInfo?.ri || '-'}</td>
-          <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
-        </tr>`;
-      }
-
-      html += `</tbody></table>`;
-      container.innerHTML = html;
-    }
-
-    // ========== CONFIGURAÇÃO DOS BOTÕES DE AÇÃO ==========
-    function setupActionButtons() {
-      const approveBtn = document.getElementById('approveBtn');
-      const denyBtn = document.getElementById('denyBtn');
-      const confirmApprove = document.getElementById('confirmApproveBtn');
-      const confirmDeny = document.getElementById('confirmDenyBtn');
-      const fileUploadArea = document.getElementById('fileUploadArea');
-      const croquiFile = document.getElementById('croquiFile');
-
-      if (approveBtn) {
-        approveBtn.addEventListener('click', () => {
-          const approveArea = document.getElementById('approveArea');
-          const denyArea = document.getElementById('denyArea');
-          if (approveArea) approveArea.style.display = 'block';
-          if (denyArea) denyArea.style.display = 'none';
-        });
-      }
-
-      if (denyBtn) {
-        denyBtn.addEventListener('click', () => {
-          const denyArea = document.getElementById('denyArea');
-          const approveArea = document.getElementById('approveArea');
-          if (denyArea) denyArea.style.display = 'block';
-          if (approveArea) approveArea.style.display = 'none';
-        });
-      }
-
-      if (fileUploadArea && croquiFile) {
-        fileUploadArea.addEventListener('click', () => croquiFile.click());
-        croquiFile.addEventListener('change', (e) => {
-          const p = fileUploadArea.querySelector('p');
-          if (p) {
-            p.textContent = e.target.files[0]?.name || 'Clique para enviar o croqui';
-          }
-        });
-      }
-
-      if (confirmApprove) {
-        confirmApprove.addEventListener('click', async () => {
-          if (!selectedRequestId) {
-            alert('Nenhuma solicitação selecionada.');
-            return;
-          }
-
-          const fileInput = document.getElementById('croquiFile');
-          const file = fileInput?.files[0];
-          if (!file) {
-            alert('Selecione o arquivo do croqui.');
-            return;
-          }
-
-          try {
-            const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
-            const { error: uploadError } = await supabase.storage
-              .from('documentos')
-              .upload(fileName, file);
-            if (uploadError) throw uploadError;
-
-            const { data: urlData } = supabase.storage
-              .from('documentos')
-              .getPublicUrl(fileName);
-            const croquiUrl = urlData.publicUrl;
-
-            const { error: updateError } = await supabase
-              .from('croqui_requests')
-              .update({
-                status: 'approved',
-                analyzed_by: servidor.id,
-                deferred_document_url: croquiUrl,
-                analyzed_at: new Date()
-              })
-              .eq('id', selectedRequestId);
-
-            if (updateError) throw updateError;
-
-            const destinos = [];
-            if (selectedServico === 'agua') destinos.push('sabesp');
-            else if (selectedServico === 'luz') destinos.push('cpfl');
-            else if (selectedServico === 'agua_e_luz') { destinos.push('sabesp'); destinos.push('cpfl'); }
-
-            for (const tipo of destinos) {
-              const { error: insertTarefaError } = await supabase
-                .from('concessao_tarefas')
-                .insert([{
-                  request_id: selectedRequestId,
-                  concessionaria_tipo: tipo,
-                  status: 'pending',
-                  scheduled_date: null,
-                  scheduled_by: null
-                }]);
-              
-              if (insertTarefaError) {
-                console.error(`Erro ao encaminhar para ${tipo}:`, insertTarefaError);
-              }
-            }
-
-            alert('Solicitação deferida e encaminhada com sucesso!');
-            
-            if (fileInput) fileInput.value = '';
-            const approveArea = document.getElementById('approveArea');
-            if (approveArea) approveArea.style.display = 'none';
-            const actionArea = document.getElementById('actionArea');
-            if (actionArea) actionArea.style.display = 'none';
-            
-            const detailsEl = document.getElementById('requestDetails');
-            if (detailsEl) {
-              detailsEl.innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
-            }
-            
-            selectedRequestId = null;
-            selectedServico = null;
-            
-            await carregarPendentes();
-            if (document.getElementById('attendedTableArea')?.style.display === 'block') {
-              await carregarTabelaAtendidas();
-            }
-          } catch (err) {
-            console.error('Erro ao deferir:', err);
-            alert('Erro ao deferir: ' + err.message);
-          }
-        });
-      }
-
-      if (confirmDeny) {
-        confirmDeny.addEventListener('click', async () => {
-          if (!selectedRequestId) {
-            alert('Nenhuma solicitação selecionada.');
-            return;
-          }
-
-          const reason = document.getElementById('denyReason')?.value.trim();
-          if (!reason) {
-            alert('Digite o motivo do indeferimento.');
-            return;
-          }
-
-          try {
-            const { error: updateError } = await supabase
-              .from('croqui_requests')
-              .update({
-                status: 'denied',
-                analyzed_by: servidor.id,
-                denial_reason: reason,
-                analyzed_at: new Date()
-              })
-              .eq('id', selectedRequestId);
-
-            if (updateError) throw updateError;
-
-            alert('Solicitação indeferida com sucesso!');
-            
-            const denyTextarea = document.getElementById('denyReason');
-            if (denyTextarea) denyTextarea.value = '';
-            const denyArea = document.getElementById('denyArea');
-            if (denyArea) denyArea.style.display = 'none';
-            const actionArea = document.getElementById('actionArea');
-            if (actionArea) actionArea.style.display = 'none';
-            
-            const detailsEl = document.getElementById('requestDetails');
-            if (detailsEl) {
-              detailsEl.innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
-            }
-            
-            selectedRequestId = null;
-            selectedServico = null;
-            
-            await carregarPendentes();
-            if (document.getElementById('attendedTableArea')?.style.display === 'block') {
-              await carregarTabelaAtendidas();
-            }
-          } catch (err) {
-            console.error('Erro ao indeferir:', err);
-            alert('Erro ao indeferir: ' + err.message);
-          }
-        });
-      }
-    }
-
-    // ========== EVENTOS DE NAVEGAÇÃO ==========
-    const viewAttendedBtn = document.getElementById('viewAttendedBtn');
-    const backToDetailsBtn = document.getElementById('backToDetailsBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    if (viewAttendedBtn) {
-      viewAttendedBtn.addEventListener('click', async () => {
-        const detailsArea = document.getElementById('requestDetailsArea');
-        const attendedArea = document.getElementById('attendedTableArea');
-        if (detailsArea) detailsArea.style.display = 'none';
-        if (attendedArea) attendedArea.style.display = 'block';
-        await carregarTabelaAtendidas();
+      // Máscaras e eventos
+      document.getElementById('iptu')?.addEventListener('input', function(e) {
+        if (e.target.value) e.target.value = formatIPTU(e.target.value);
       });
-    }
+      document.getElementById('quadra').addEventListener('input', function(e) {
+        if (e.target.value.length > 5) e.target.value = e.target.value.slice(0,5);
+      });
+      document.getElementById('lote').addEventListener('input', function(e) {
+        if (e.target.value.length > 4) e.target.value = e.target.value.slice(0,4);
+      });
 
-    if (backToDetailsBtn) {
-      backToDetailsBtn.addEventListener('click', () => {
-        const attendedArea = document.getElementById('attendedTableArea');
-        const detailsArea = document.getElementById('requestDetailsArea');
-        if (attendedArea) attendedArea.style.display = 'none';
-        if (detailsArea) detailsArea.style.display = 'block';
-        if (selectedRequestId) {
-          window.selecionarSolicitacao(selectedRequestId);
+      const fileArea = document.getElementById('fileUploadArea');
+      const fileInput = document.getElementById('documentoFile');
+      fileArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+        const span = fileArea.querySelector('span');
+        span.textContent = fileInput.files[0]?.name || 'Clique para enviar';
+      });
+
+      document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const servico = document.querySelector('input[name="servico"]:checked')?.value;
+        const file = fileInput.files[0];
+        const iptu = document.getElementById('iptu').value.trim();
+        const quadra = document.getElementById('quadra').value.trim();
+        const lote = document.getElementById('lote').value.trim();
+        const logradouro = document.getElementById('logradouro').value.trim();
+        const esquinaOuFrente = document.querySelector('input[name="esquina_ou_frente"]:checked')?.value || 'nao';
+
+        const msgDiv = document.getElementById('solicitacaoMessage');
+        msgDiv.className = 'auth-message';
+        const btn = document.getElementById('btnEnviar');
+
+        if (!file) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Selecione o documento de posse.';
+          return;
+        }
+        if (!servico) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Selecione o tipo de ligação.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${municipe.id}/${Date.now()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('documentos')
+            .upload(fileName, file);
+          if (uploadError) throw new Error(`Falha no upload: ${uploadError.message}`);
+
+          const { data: urlData } = supabase.storage.from('documentos').getPublicUrl(fileName);
+          const documentUrl = urlData.publicUrl;
+
+          const { error: insertError } = await supabase
+            .from('croqui_requests')
+            .insert([{
+              user_id: municipe.id,
+              iptu: iptu || null,
+              document_url: documentUrl,
+              quadra: quadra || null,
+              lote: lote || null,
+              logradouro: logradouro || null,
+              servico: servico,
+              esquina_ou_frente: esquinaOuFrente,
+              status: 'pending'
+            }]);
+
+          if (insertError) throw new Error(`Erro ao salvar solicitação: ${insertError.message}`);
+
+          msgDiv.className = 'auth-message success-message';
+          msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Solicitação enviada com sucesso!';
+          
+          document.getElementById('solicitacaoForm').reset();
+          fileArea.querySelector('span').textContent = 'Clique para enviar';
+          document.querySelectorAll('input[name="esquina_ou_frente"]').forEach(r => {
+            if (r.value === 'nao') r.checked = true;
+          });
+
+          setTimeout(() => renderDashboard(user), 1500);
+        } catch (error) {
+          console.error(error);
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = error.message || 'Erro ao enviar.';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
         }
       });
     }
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('servidor');
-        window.location.href = 'servidor-login.html';
-      });
-    }
+    async function gerarNotificacoes(solicitacoes) {
+      if (!solicitacoes?.length) {
+        return '<p style="color: #64748b;">Você ainda não fez nenhuma solicitação.</p>';
+      }
 
-    // ========== INICIALIZAÇÃO ==========
-    (async () => {
-      await carregarPendentes();
-      setupActionButtons();
-    })();
+      let html = '';
+      for (const s of solicitacoes) {
+        const statusLabel = {
+          pending: '⏳ Pendente',
+          approved: '✅ Aprovado',
+          denied: '❌ Negado',
+          forwarded: '↪️ Encaminhado'
+        }[s.status] || s.status;
+
+        let servicoIcon = '';
+        if (s.servico === 'agua') servicoIcon = '<i class="fas fa-tint" style="color:#2563eb;"></i>';
+        else if (s.servico === 'luz') servicoIcon = '<i class="fas fa-bolt" style="color:#f59e0b;"></i>';
+        else if (s.servico === 'agua_e_luz') servicoIcon = '<i class="fas fa-tint" style="color:#2563eb;"></i> <i class="fas fa-bolt" style="color:#f59e0b;"></i>';
+
+        let motivoLink = '';
+        if (s.status === 'denied' && s.denial_reason) {
+          const motivo = s.denial_reason.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          motivoLink = `<div class="motivo-link"><a href="javascript:void(0)" onclick="alert('Motivo do indeferimento:\\n\\n${motivo}')"><i class="fas fa-info-circle"></i> Ver motivo</a></div>`;
+        }
+
+        let agendamentoHTML = '';
+        if (s.status === 'approved' || s.status === 'forwarded') {
+          const agendamentos = await buscarAgendamentos(s.id);
+          if (agendamentos.length > 0) {
+            agendamentoHTML = '<div style="margin-top: 8px;">';
+            agendamentos.forEach(ag => {
+              const dataFormatada = new Date(ag.scheduled_date).toLocaleDateString('pt-BR');
+              const horario = ag.scheduled_time || 'horário não informado';
+              const empresa = ag.concessionaria_tipo === 'sabesp' ? 'SABESP' : 'CPFL';
+              agendamentoHTML += `<div class="agendamento-info"><i class="fas fa-calendar-alt"></i> <strong>${empresa}:</strong> ${dataFormatada} <i class="fas fa-clock" style="margin-left:8px;"></i> ${horario}</div>`;
+            });
+            agendamentoHTML += '</div>';
+          } else {
+            agendamentoHTML = '<div style="margin-top:8px; font-size:13px; color:#64748b;"><i class="fas fa-clock"></i> Aguardando agendamento</div>';
+          }
+        }
+
+        html += `
+          <div class="notificacao-item status-${s.status}">
+            <div class="notificacao-status">${statusLabel}</div>
+            <div class="notificacao-endereco">${servicoIcon} ${s.logradouro || 'Endereço não informado'}</div>
+            <div class="notificacao-data">${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+            ${motivoLink}
+            ${agendamentoHTML}
+          </div>
+        `;
+      }
+      return html;
+    }
   </script>
 </body>
 </html>
