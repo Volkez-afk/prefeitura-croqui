@@ -599,7 +599,7 @@
     </div>
   </div>
 
-  <!-- Botão de logout flutuante (fora do dashboard para evitar erros) -->
+  <!-- ========== BOTÃO DE LOGOUT FLUTUANTE ========== -->
   <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
     <button id="logoutBtn" class="btn" style="background: #ef4444; color: white; border-radius: 40px; padding: 12px 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
       <i class="fas fa-sign-out-alt"></i> Sair
@@ -650,6 +650,7 @@
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let selectedRequestId = null;
+    let selectedServico = null; // NOVA VARIÁVEL: armazena o tipo de serviço da solicitação
 
     // ========== FUNÇÕES AUXILIARES ==========
     async function buscarMunicipePorUserId(userId) {
@@ -715,7 +716,7 @@
       listEl.innerHTML = html;
     }
 
-    // ========== SELECIONAR SOLICITAÇÃO ==========
+    // ========== SELECIONAR SOLICITAÇÃO (ATUALIZADA) ==========
     window.selecionarSolicitacao = async (id) => {
       const attendedArea = document.getElementById('attendedTableArea');
       const detailsArea = document.getElementById('requestDetailsArea');
@@ -738,7 +739,16 @@
         return;
       }
 
+      // --- NOVO: Armazenar o tipo de serviço da solicitação ---
+      selectedServico = request.servico;
+
       const municipe = await buscarMunicipePorUserId(request.user_id);
+      
+      // Mapear o serviço para exibição amigável
+      let servicoDisplay = '';
+      if (request.servico === 'agua') servicoDisplay = '💧 Água';
+      else if (request.servico === 'luz') servicoDisplay = '⚡ Luz';
+      else if (request.servico === 'agua_e_luz') servicoDisplay = '💧⚡ Água e Luz';
       
       let html = `
         <h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2>
@@ -751,6 +761,7 @@
           <div class="detail-row"><span class="detail-label">Logradouro:</span> <span class="detail-value">${request.logradouro || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Quadra:</span> <span class="detail-value">${request.quadra || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Lote:</span> <span class="detail-value">${request.lote || ''}</span></div>
+          <div class="detail-row"><span class="detail-label">Tipo de ligação:</span> <span class="detail-value">${servicoDisplay || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Documento de posse:</span> <span class="detail-value">${request.document_url ? `<a href="${request.document_url}" target="_blank" style="color: #2563eb;">Visualizar documento</a>` : 'Não enviado'}</span></div>
         </div>
       `;
@@ -768,80 +779,77 @@
       await carregarPendentes();
     };
 
-    // ========== CARREGAR TABELA DE ATENDIDAS (COM STATUS CLICÁVEL) ==========
-    // ========== CARREGAR TABELA DE ATENDIDAS (VERSÃO SIMPLIFICADA) ==========
-async function carregarTabelaAtendidas() {
-  const container = document.getElementById('attendedTableContainer');
-  if (!container) return;
-  container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
+    // ========== CARREGAR TABELA DE ATENDIDAS ==========
+    async function carregarTabelaAtendidas() {
+      const container = document.getElementById('attendedTableContainer');
+      if (!container) return;
+      container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
 
-  const { data, error } = await supabase
-    .from('croqui_requests')
-    .select('*')
-    .in('status', ['approved', 'denied', 'forwarded'])
-    .order('analyzed_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('croqui_requests')
+        .select('*')
+        .in('status', ['approved', 'denied', 'forwarded'])
+        .order('analyzed_at', { ascending: false });
 
-  if (error) {
-    console.error('Erro ao carregar atendidas:', error);
-    container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
-    return;
-  }
+      if (error) {
+        console.error('Erro ao carregar atendidas:', error);
+        container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
+        return;
+      }
 
-  if (!data || data.length === 0) {
-    container.innerHTML = '<p style="text-align:center; padding: 40px;">Nenhuma solicitação atendida ainda.</p>';
-    return;
-  }
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding: 40px;">Nenhuma solicitação atendida ainda.</p>';
+        return;
+      }
 
-  let html = `<table>
-    <thead>
-      <tr>
-        <th>Munícipe</th>
-        <th>Endereço</th>
-        <th>Status</th>
-        <th>Servidor</th>
-        <th>RI</th>
-        <th>Data</th>
-      </tr>
-    </thead>
-    <tbody>
-  `;
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>Munícipe</th>
+            <th>Endereço</th>
+            <th>Status</th>
+            <th>Servidor</th>
+            <th>RI</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
 
-  for (const req of data) {
-    const municipe = await buscarMunicipePorUserId(req.user_id);
-    const servidorInfo = await buscarServidorPorId(req.analyzed_by);
-    
-    let statusCell = '';
-    
-    if (req.status === 'approved') {
-      // ✅ Deferido: link que abre o croqui
-      statusCell = `<span class="status-link" onclick="window.open('${req.deferred_document_url || ''}', '_blank')" style="cursor: pointer; color: #10b981; font-weight: 600;">
-                      ✅ Deferido
-                    </span>`;
-    } else if (req.status === 'denied') {
-      // ❌ Indeferido: link que exibe o motivo em alerta
-      const motivo = (req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      statusCell = `<span class="status-link" onclick="alert('❌ Motivo do indeferimento:\\n\\n${motivo}')" style="cursor: pointer; color: #ef4444; font-weight: 600;">
-                      ❌ Indeferido
-                    </span>`;
-    } else if (req.status === 'forwarded') {
-      statusCell = `<span style="color: #2563eb;">↪️ Encaminhado</span>`;
-    } else {
-      statusCell = req.status;
+      for (const req of data) {
+        const municipe = await buscarMunicipePorUserId(req.user_id);
+        const servidorInfo = await buscarServidorPorId(req.analyzed_by);
+        
+        let statusCell = '';
+        
+        if (req.status === 'approved') {
+          statusCell = `<span class="status-link" onclick="window.open('${req.deferred_document_url || ''}', '_blank')" style="cursor: pointer; color: #10b981; font-weight: 600;">
+                          ✅ Deferido
+                        </span>`;
+        } else if (req.status === 'denied') {
+          const motivo = (req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          statusCell = `<span class="status-link" onclick="alert('❌ Motivo do indeferimento:\\n\\n${motivo}')" style="cursor: pointer; color: #ef4444; font-weight: 600;">
+                          ❌ Indeferido
+                        </span>`;
+        } else if (req.status === 'forwarded') {
+          statusCell = `<span style="color: #2563eb;">↪️ Encaminhado</span>`;
+        } else {
+          statusCell = req.status;
+        }
+        
+        html += `<tr>
+          <td>${municipe?.full_name || '-'}</td>
+          <td>${req.logradouro || '-'}</td>
+          <td>${statusCell}</td>
+          <td>${servidorInfo?.nome || '-'}</td>
+          <td>${servidorInfo?.ri || '-'}</td>
+          <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
+        </tr>`;
+      }
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
     }
-    
-    html += `<tr>
-      <td>${municipe?.full_name || '-'}</td>
-      <td>${req.logradouro || '-'}</td>
-      <td>${statusCell}</td>
-      <td>${servidorInfo?.nome || '-'}</td>
-      <td>${servidorInfo?.ri || '-'}</td>
-      <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
-    </tr>`;
-  }
-
-  html += `</tbody></table>`;
-  container.innerHTML = html;
-}
 
     // ========== CONFIGURAÇÃO DOS BOTÕES DE AÇÃO ==========
     function setupActionButtons() {
@@ -880,6 +888,7 @@ async function carregarTabelaAtendidas() {
         });
       }
 
+      // ========== BOTÃO CONFIRMAR DEFERIMENTO (ATUALIZADO) ==========
       if (confirmApprove) {
         confirmApprove.addEventListener('click', async () => {
           if (!selectedRequestId) {
@@ -895,6 +904,7 @@ async function carregarTabelaAtendidas() {
           }
 
           try {
+            // 1. Upload do croqui
             const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabase.storage
               .from('documentos')
@@ -906,6 +916,7 @@ async function carregarTabelaAtendidas() {
               .getPublicUrl(fileName);
             const croquiUrl = urlData.publicUrl;
 
+            // 2. Atualizar a solicitação
             const { error: updateError } = await supabase
               .from('croqui_requests')
               .update({
@@ -918,8 +929,33 @@ async function carregarTabelaAtendidas() {
 
             if (updateError) throw updateError;
 
-            alert('Solicitação deferida com sucesso!');
+            // ========== NOVO: ENCAMINHAR PARA CONCESSIONÁRIAS ==========
+            // Determinar concessionárias destino baseado no serviço
+            const destinos = [];
+            if (selectedServico === 'agua') destinos.push('sabesp');
+            else if (selectedServico === 'luz') destinos.push('cpfl');
+            else if (selectedServico === 'agua_e_luz') { destinos.push('sabesp'); destinos.push('cpfl'); }
+
+            // Criar tarefas pendentes para cada concessionária
+            for (const tipo of destinos) {
+              const { error: insertTarefaError } = await supabase
+                .from('concessao_tarefas')
+                .insert([{
+                  request_id: selectedRequestId,
+                  concessionaria_tipo: tipo,
+                  status: 'pending',
+                  scheduled_date: null,
+                  scheduled_by: null
+                }]);
+              
+              if (insertTarefaError) {
+                console.error(`Erro ao encaminhar para ${tipo}:`, insertTarefaError);
+              }
+            }
+
+            alert('Solicitação deferida e encaminhada com sucesso!');
             
+            // 3. Limpar campos e UI
             if (fileInput) fileInput.value = '';
             const approveArea = document.getElementById('approveArea');
             if (approveArea) approveArea.style.display = 'none';
@@ -932,6 +968,8 @@ async function carregarTabelaAtendidas() {
             }
             
             selectedRequestId = null;
+            selectedServico = null; // Limpar a variável de serviço
+            
             await carregarPendentes();
             if (document.getElementById('attendedTableArea')?.style.display === 'block') {
               await carregarTabelaAtendidas();
@@ -943,6 +981,7 @@ async function carregarTabelaAtendidas() {
         });
       }
 
+      // ========== BOTÃO CONFIRMAR INDEFERIMENTO ==========
       if (confirmDeny) {
         confirmDeny.addEventListener('click', async () => {
           if (!selectedRequestId) {
@@ -950,8 +989,7 @@ async function carregarTabelaAtendidas() {
             return;
           }
 
-          const reasonTextarea = document.getElementById('denyReason');
-          const reason = reasonTextarea?.value.trim();
+          const reason = document.getElementById('denyReason')?.value.trim();
           if (!reason) {
             alert('Digite o motivo do indeferimento.');
             return;
@@ -972,7 +1010,8 @@ async function carregarTabelaAtendidas() {
 
             alert('Solicitação indeferida com sucesso!');
             
-            if (reasonTextarea) reasonTextarea.value = '';
+            const denyTextarea = document.getElementById('denyReason');
+            if (denyTextarea) denyTextarea.value = '';
             const denyArea = document.getElementById('denyArea');
             if (denyArea) denyArea.style.display = 'none';
             const actionArea = document.getElementById('actionArea');
@@ -984,6 +1023,8 @@ async function carregarTabelaAtendidas() {
             }
             
             selectedRequestId = null;
+            selectedServico = null;
+            
             await carregarPendentes();
             if (document.getElementById('attendedTableArea')?.style.display === 'block') {
               await carregarTabelaAtendidas();
