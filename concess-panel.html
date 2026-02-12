@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    /* ========== ESTILOS PADRÃO DO PORTAL ========== */
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Inter', sans-serif;
@@ -24,7 +25,6 @@
     }
     .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; width: 100%; }
 
-    /* Barra de acessibilidade */
     .accessibility-bar {
       background-color: #0a4b6e;
       color: white;
@@ -57,7 +57,6 @@
       text-decoration: underline;
     }
 
-    /* Cabeçalho */
     .main-header {
       background-color: white;
       padding: 30px 0 20px;
@@ -98,7 +97,6 @@
       font-weight: 500;
     }
 
-    /* Menu */
     .nav-menu {
       background-color: white;
       border-top: 1px solid #e2e8f0;
@@ -130,7 +128,6 @@
       border-bottom-color: #0a4b6e;
     }
 
-    /* Conteúdo principal */
     .dashboard {
       display: flex;
       gap: 30px;
@@ -178,15 +175,6 @@
       color: #0f172a;
     }
 
-    .main-content {
-      flex: 1;
-      background: white;
-      border-radius: 20px;
-      padding: 32px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      border: 1px solid #e2e8f0;
-    }
-
     .badge {
       display: inline-block;
       padding: 4px 12px;
@@ -197,15 +185,24 @@
     .badge-sabesp { background: #e0f2fe; color: #0369a1; }
     .badge-cpfl { background: #fef3c7; color: #92400e; }
 
+    .main-content {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border-radius: 30px;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 14px;
       border: none;
       cursor: pointer;
       transition: all 0.2s;
@@ -219,12 +216,75 @@
       background-color: #1d4ed8;
       transform: scale(1.02);
     }
+    .btn-success {
+      background-color: #10b981;
+      color: white;
+    }
+    .btn-success:hover {
+      background-color: #059669;
+    }
     .btn-logout {
       background-color: #ef4444;
       color: white;
     }
     .btn-logout:hover {
       background-color: #dc2626;
+    }
+    .btn-outline {
+      background-color: white;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+    .tab {
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #64748b;
+      border-radius: 30px;
+    }
+    .tab.active {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th {
+      text-align: left;
+      padding: 12px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
     }
 
     footer {
@@ -246,17 +306,14 @@
       flex-wrap: wrap;
       justify-content: center;
       color: #cbd5e1;
-      font-size: 15px;
     }
     .footer-contact a {
       color: #cbd5e1;
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
-    .footer-contact a:hover {
-      color: white;
+    .footer-bottom {
+      color: #94a3b8;
+      font-size: 13px;
     }
 
     @media (max-width: 900px) {
@@ -285,10 +342,10 @@
   <div class="main-header">
     <div class="container">
       <div class="logo-area">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão" class="logo-brasao">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão de Botucatu" class="logo-brasao">
         <div class="titulos-prefeitura">
           <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
-          <span class="subtitulo" id="headerSubtitle">Painel Concessionária</span>
+          <span class="subtitulo" id="headerSubtitle">Carregando...</span>
         </div>
       </div>
     </div>
@@ -303,7 +360,6 @@
     </div>
   </div>
 
-  <!-- Área principal -->
   <div id="app">
     <div style="text-align:center; padding: 60px;">
       <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #2563eb;"></i>
@@ -311,7 +367,6 @@
     </div>
   </div>
 
-  <!-- Botão de logout flutuante -->
   <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
     <button id="logoutBtn" class="btn btn-logout">
       <i class="fas fa-sign-out-alt"></i> Sair
@@ -350,68 +405,249 @@
       window.location.href = 'concess-login.html';
     }
 
-    // ===== RENDERIZAR PAINEL CONFORME O TIPO =====
+    // ===== VARIÁVEIS GLOBAIS =====
     const app = document.getElementById('app');
     const headerSubtitle = document.getElementById('headerSubtitle');
+    const tipoConcessao = usuario.tipo; // 'sabesp' ou 'cpfl'
+    headerSubtitle.textContent = tipoConcessao === 'sabesp' ? 'Painel SABESP' : 'Painel CPFL';
 
-    if (usuario.tipo === 'sabesp') {
-      headerSubtitle.textContent = 'Painel SABESP';
+    // ===== FUNÇÕES AUXILIARES =====
+    async function buscarMunicipePorUserId(userId) {
+      const { data, error } = await supabase
+        .from('municipes')
+        .select('full_name')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    }
+
+    async function buscarServidorPorId(servidorId) {
+      if (!servidorId) return null;
+      const { data, error } = await supabase
+        .from('servidores')
+        .select('nome')
+        .eq('id', servidorId)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    }
+
+    // ===== CARREGAR TAREFAS PENDENTES =====
+    async function carregarPendentes() {
+      const { data: tarefas, error } = await supabase
+        .from('concessao_tarefas')
+        .select(`
+          id,
+          request_id,
+          status,
+          croqui_requests!inner (
+            id,
+            iptu,
+            logradouro,
+            quadra,
+            lote,
+            user_id,
+            deferred_document_url,
+            analyzed_by,
+            servico
+          )
+        `)
+        .eq('concessionaria_tipo', tipoConcessao)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar pendentes:', error);
+        return '<p style="color:red;">Erro ao carregar solicitações.</p>';
+      }
+
+      if (!tarefas || tarefas.length === 0) {
+        return '<p style="color: #64748b; text-align:center;">Nenhuma solicitação pendente.</p>';
+      }
+
+      let html = `<div class="table-responsive"><table>
+        <thead>
+          <tr>
+            <th>Munícipe</th>
+            <th>Endereço</th>
+            <th>IPTU</th>
+            <th>Croqui</th>
+            <th>Data do deferimento</th>
+            <th>Servidor</th>
+            <th>Agendar instalação</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      for (const tarefa of tarefas) {
+        const req = tarefa.croqui_requests;
+        const municipe = await buscarMunicipePorUserId(req.user_id);
+        const servidor = await buscarServidorPorId(req.analyzed_by);
+        
+        html += `<tr>
+          <td>${municipe?.full_name || '-'}</td>
+          <td>${req.logradouro || ''} - QD ${req.quadra || ''} LT ${req.lote || ''}</td>
+          <td>${req.iptu || '-'}</td>
+          <td>
+            ${req.deferred_document_url ? 
+              `<a href="${req.deferred_document_url}" target="_blank" style="color: #2563eb;"><i class="fas fa-file-pdf"></i> Ver croqui</a>` : 
+              '-'}
+          </td>
+          <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
+          <td>${servidor?.nome || '-'}</td>
+          <td>
+            <input type="date" id="date_${tarefa.id}" class="date-input" style="width:140px;" required>
+            <button class="btn btn-success btn-sm" onclick="window.agendar('${tarefa.id}')" style="margin-left:8px;">
+              <i class="fas fa-calendar-check"></i> Agendar
+            </button>
+          </td>
+        </tr>`;
+      }
+
+      html += `</tbody></table></div>`;
+      return html;
+    }
+
+    // ===== CARREGAR TAREFAS AGENDADAS =====
+    async function carregarAgendadas() {
+      const { data: tarefas, error } = await supabase
+        .from('concessao_tarefas')
+        .select(`
+          id,
+          request_id,
+          scheduled_date,
+          scheduled_by,
+          croqui_requests!inner (
+            id,
+            logradouro,
+            quadra,
+            lote,
+            user_id
+          ),
+          concessionarias!scheduled_by (
+            usuario
+          )
+        `)
+        .eq('concessionaria_tipo', tipoConcessao)
+        .eq('status', 'scheduled')
+        .order('scheduled_date', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao carregar agendadas:', error);
+        return '<p style="color:red;">Erro ao carregar agendamentos.</p>';
+      }
+
+      if (!tarefas || tarefas.length === 0) {
+        return '<p style="color: #64748b; text-align:center;">Nenhum agendamento realizado.</p>';
+      }
+
+      let html = `<div class="table-responsive"><table>
+        <thead>
+          <tr>
+            <th>Munícipe</th>
+            <th>Endereço</th>
+            <th>Data agendada</th>
+            <th>Agendado por</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      for (const tarefa of tarefas) {
+        const req = tarefa.croqui_requests;
+        const municipe = await buscarMunicipePorUserId(req.user_id);
+        
+        html += `<tr>
+          <td>${municipe?.full_name || '-'}</td>
+          <td>${req.logradouro || ''} - QD ${req.quadra || ''} LT ${req.lote || ''}</td>
+          <td>${new Date(tarefa.scheduled_date).toLocaleDateString('pt-BR')}</td>
+          <td>${tarefa.concessionarias?.usuario || '-'}</td>
+        </tr>`;
+      }
+
+      html += `</tbody></table></div>`;
+      return html;
+    }
+
+    // ===== FUNÇÃO DE AGENDAMENTO (global para onclick) =====
+    window.agendar = async (tarefaId) => {
+      const dateInput = document.getElementById(`date_${tarefaId}`);
+      const scheduledDate = dateInput.value;
+      if (!scheduledDate) {
+        alert('Selecione uma data para o agendamento.');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('concessao_tarefas')
+          .update({
+            status: 'scheduled',
+            scheduled_date: scheduledDate,
+            scheduled_by: usuario.id
+          })
+          .eq('id', tarefaId);
+
+        if (error) throw error;
+
+        alert('Agendamento realizado com sucesso!');
+        renderizarPainel(); // recarrega as abas
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao agendar: ' + err.message);
+      }
+    };
+
+    // ===== RENDERIZAÇÃO PRINCIPAL =====
+    async function renderizarPainel() {
+      const pendingHTML = await carregarPendentes();
+      const scheduledHTML = await carregarAgendadas();
+
       app.innerHTML = `
         <div class="dashboard">
           <div class="sidebar">
             <div class="perfil-header">
               <div class="perfil-avatar">
-                <i class="fas fa-tint"></i>
+                <i class="fas fa-${tipoConcessao === 'sabesp' ? 'tint' : 'bolt'}"></i>
               </div>
               <div class="perfil-nome">
                 <h3>${usuario.usuario}</h3>
-                <span class="badge badge-sabesp"><i class="fas fa-tint"></i> SABESP</span>
+                <span class="badge badge-${tipoConcessao}">
+                  <i class="fas fa-${tipoConcessao === 'sabesp' ? 'tint' : 'bolt'}"></i>
+                  ${tipoConcessao.toUpperCase()}
+                </span>
               </div>
             </div>
-            <p style="color: #64748b; margin-top: 16px;">
-              <i class="fas fa-info-circle"></i> Bem-vindo ao painel da SABESP.
+            <p style="color: #64748b;">
+              <i class="fas fa-info-circle"></i> Gerencie as solicitações de ${tipoConcessao === 'sabesp' ? 'água' : 'energia'}.
             </p>
           </div>
           <div class="main-content">
-            <h2 style="color: #0a4b6e;">Solicitações de Ligação de Água</h2>
-            <p style="color: #64748b; margin-bottom: 24px;">Aqui serão exibidos os croquis deferidos e encaminhados para a SABESP.</p>
-            <div style="background: #f8fafc; border-radius: 12px; padding: 40px; text-align: center;">
-              <i class="fas fa-tint" style="font-size: 48px; color: #2563eb; margin-bottom: 16px;"></i>
-              <p style="color: #1e293b; font-weight: 600;">Módulo em desenvolvimento</p>
-              <p style="color: #64748b; margin-top: 8px;">Em breve você poderá visualizar e gerenciar as solicitações de água.</p>
+            <div class="tabs">
+              <div id="tabPending" class="tab active">📋 Pendentes</div>
+              <div id="tabScheduled" class="tab">📅 Agendadas</div>
+            </div>
+            <div id="tabContent">
+              ${pendingHTML}
             </div>
           </div>
         </div>
       `;
-    } else {
-      headerSubtitle.textContent = 'Painel CPFL';
-      app.innerHTML = `
-        <div class="dashboard">
-          <div class="sidebar">
-            <div class="perfil-header">
-              <div class="perfil-avatar">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <div class="perfil-nome">
-                <h3>${usuario.usuario}</h3>
-                <span class="badge badge-cpfl"><i class="fas fa-bolt"></i> CPFL</span>
-              </div>
-            </div>
-            <p style="color: #64748b; margin-top: 16px;">
-              <i class="fas fa-info-circle"></i> Bem-vindo ao painel da CPFL.
-            </p>
-          </div>
-          <div class="main-content">
-            <h2 style="color: #0a4b6e;">Solicitações de Ligação de Energia</h2>
-            <p style="color: #64748b; margin-bottom: 24px;">Aqui serão exibidos os croquis deferidos e encaminhados para a CPFL.</p>
-            <div style="background: #f8fafc; border-radius: 12px; padding: 40px; text-align: center;">
-              <i class="fas fa-bolt" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
-              <p style="color: #1e293b; font-weight: 600;">Módulo em desenvolvimento</p>
-              <p style="color: #64748b; margin-top: 8px;">Em breve você poderá visualizar e gerenciar as solicitações de energia.</p>
-            </div>
-          </div>
-        </div>
-      `;
+
+      // Eventos das abas
+      document.getElementById('tabPending').addEventListener('click', async () => {
+        document.getElementById('tabPending').classList.add('active');
+        document.getElementById('tabScheduled').classList.remove('active');
+        const content = await carregarPendentes();
+        document.getElementById('tabContent').innerHTML = content;
+      });
+
+      document.getElementById('tabScheduled').addEventListener('click', async () => {
+        document.getElementById('tabScheduled').classList.add('active');
+        document.getElementById('tabPending').classList.remove('active');
+        const content = await carregarAgendadas();
+        document.getElementById('tabContent').innerHTML = content;
+      });
     }
 
     // ===== LOGOUT =====
@@ -419,6 +655,9 @@
       localStorage.removeItem('concessionaria');
       window.location.href = 'concess-login.html';
     });
+
+    // ===== INICIALIZAÇÃO =====
+    renderizarPainel();
   </script>
 </body>
 </html>
