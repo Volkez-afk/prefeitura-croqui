@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel - SABESP/CPFL - Prefeitura de Botucatu</title>
+
+  <!-- Fontes e ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; width: 100%; }
+
+    /* Barra de acessibilidade */
+    .accessibility-bar {
+      background-color: #0a4b6e;
+      color: white;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    .accessibility-bar .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .accessibility-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .accessibility-links a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .accessibility-links a:hover {
+      opacity: 0.9;
+      text-decoration: underline;
+    }
+
+    /* Cabeçalho */
+    .main-header {
+      background-color: white;
+      padding: 30px 0 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .main-header .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .logo-brasao {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+    .titulos-prefeitura {
+      display: flex;
+      flex-direction: column;
+    }
+    .titulo-principal {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0a4b6e;
+      line-height: 1.2;
+    }
+    .subtitulo {
+      font-size: 16px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* Menu */
+    .nav-menu {
+      background-color: white;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 0;
+    }
+    .nav-menu .container {
+      display: flex;
+      justify-content: center;
+    }
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .nav-links a {
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #0a4b6e;
+      border-bottom-color: #0a4b6e;
+    }
+
+    /* Conteúdo principal */
+    .dashboard {
+      display: flex;
+      gap: 30px;
+      margin: 40px auto;
+      flex: 1;
+      max-width: 1280px;
+      padding: 0 24px;
+    }
+
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+      align-self: start;
+    }
+
+    .perfil-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .perfil-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #0a4b6e, #2563eb);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+    }
+
+    .perfil-nome h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .main-content {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #e2e8f0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .badge-sabesp { background: #e0f2fe; color: #0369a1; }
+    .badge-cpfl { background: #fef3c7; color: #92400e; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background-color: #2563eb;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.02);
+    }
+    .btn-logout {
+      background-color: #ef4444;
+      color: white;
+    }
+    .btn-logout:hover {
+      background-color: #dc2626;
+    }
+
+    footer {
+      background-color: #0f172a;
+      color: white;
+      padding: 32px 0 24px;
+      margin-top: auto;
+    }
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+    .footer-contact {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+    .footer-contact a {
+      color: #cbd5e1;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-contact a:hover {
+      color: white;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="accessibility-bar">
+    <div class="container">
+      <div class="accessibility-links">
+        <a href="#"><i class="fas fa-plus-circle"></i> Aumentar Fonte</a>
+        <a href="#"><i class="fas fa-minus-circle"></i> Diminuir Fonte</a>
+        <a href="#"><i class="fas fa-adjust"></i> Alto Contraste</a>
+        <a href="#"><i class="fas fa-hands"></i> Libras</a>
+        <a href="#"><i class="fas fa-sitemap"></i> Mapa do Site</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-header">
+    <div class="container">
+      <div class="logo-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Bras%C3%A3o_de_Botucatu.jpg" alt="Brasão" class="logo-brasao">
+        <div class="titulos-prefeitura">
+          <span class="titulo-principal">Prefeitura Municipal de Botucatu</span>
+          <span class="subtitulo" id="headerSubtitle">Painel Concessionária</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-menu">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="concess-panel.html" class="active">Painel</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Área principal -->
+  <div id="app">
+    <div style="text-align:center; padding: 60px;">
+      <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #2563eb;"></i>
+      <p style="margin-top: 20px;">Carregando...</p>
+    </div>
+  </div>
+
+  <!-- Botão de logout flutuante -->
+  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+    <button id="logoutBtn" class="btn btn-logout">
+      <i class="fas fa-sign-out-alt"></i> Sair
+    </button>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-contact">
+          <a href="https://www.botucatu.sp.gov.br" target="_blank"><i class="fas fa-globe"></i> Site oficial</a>
+          <span><i class="fas fa-phone-alt"></i> (14) 3811-1400</span>
+          <span><i class="fas fa-envelope"></i> gabinete@botucatu.sp.gov.br</span>
+        </div>
+        <div class="footer-bottom">
+          © 2026 – Prefeitura Municipal de Botucatu
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+
+    // ===== VERIFICAÇÃO DE LOGIN =====
+    const sessao = localStorage.getItem('concessionaria');
+    if (!sessao) {
+      window.location.href = 'concess-login.html';
+    }
+
+    let usuario;
+    try {
+      usuario = JSON.parse(sessao);
+    } catch (e) {
+      localStorage.removeItem('concessionaria');
+      window.location.href = 'concess-login.html';
+    }
+
+    // ===== RENDERIZAR PAINEL CONFORME O TIPO =====
+    const app = document.getElementById('app');
+    const headerSubtitle = document.getElementById('headerSubtitle');
+
+    if (usuario.tipo === 'sabesp') {
+      headerSubtitle.textContent = 'Painel SABESP';
+      app.innerHTML = `
+        <div class="dashboard">
+          <div class="sidebar">
+            <div class="perfil-header">
+              <div class="perfil-avatar">
+                <i class="fas fa-tint"></i>
+              </div>
+              <div class="perfil-nome">
+                <h3>${usuario.usuario}</h3>
+                <span class="badge badge-sabesp"><i class="fas fa-tint"></i> SABESP</span>
+              </div>
+            </div>
+            <p style="color: #64748b; margin-top: 16px;">
+              <i class="fas fa-info-circle"></i> Bem-vindo ao painel da SABESP.
+            </p>
+          </div>
+          <div class="main-content">
+            <h2 style="color: #0a4b6e;">Solicitações de Ligação de Água</h2>
+            <p style="color: #64748b; margin-bottom: 24px;">Aqui serão exibidos os croquis deferidos e encaminhados para a SABESP.</p>
+            <div style="background: #f8fafc; border-radius: 12px; padding: 40px; text-align: center;">
+              <i class="fas fa-tint" style="font-size: 48px; color: #2563eb; margin-bottom: 16px;"></i>
+              <p style="color: #1e293b; font-weight: 600;">Módulo em desenvolvimento</p>
+              <p style="color: #64748b; margin-top: 8px;">Em breve você poderá visualizar e gerenciar as solicitações de água.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      headerSubtitle.textContent = 'Painel CPFL';
+      app.innerHTML = `
+        <div class="dashboard">
+          <div class="sidebar">
+            <div class="perfil-header">
+              <div class="perfil-avatar">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <div class="perfil-nome">
+                <h3>${usuario.usuario}</h3>
+                <span class="badge badge-cpfl"><i class="fas fa-bolt"></i> CPFL</span>
+              </div>
+            </div>
+            <p style="color: #64748b; margin-top: 16px;">
+              <i class="fas fa-info-circle"></i> Bem-vindo ao painel da CPFL.
+            </p>
+          </div>
+          <div class="main-content">
+            <h2 style="color: #0a4b6e;">Solicitações de Ligação de Energia</h2>
+            <p style="color: #64748b; margin-bottom: 24px;">Aqui serão exibidos os croquis deferidos e encaminhados para a CPFL.</p>
+            <div style="background: #f8fafc; border-radius: 12px; padding: 40px; text-align: center;">
+              <i class="fas fa-bolt" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
+              <p style="color: #1e293b; font-weight: 600;">Módulo em desenvolvimento</p>
+              <p style="color: #64748b; margin-top: 8px;">Em breve você poderá visualizar e gerenciar as solicitações de energia.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== LOGOUT =====
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('concessionaria');
+      window.location.href = 'concess-login.html';
+    });
+  </script>
+</body>
+</html>
