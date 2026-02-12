@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Servidor - Prefeitura de Botucatu</title>
   <style>
+    /* Mesmos estilos anteriores, com pequenos ajustes */
     body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
     .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -21,6 +22,7 @@
     .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
     .btn-approve { background: #52c41a; color: white; }
     .btn-deny { background: #ff4d4f; color: white; }
+    .btn-primary { background: #2563eb; color: white; }
     .btn:hover { opacity: 0.9; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -28,6 +30,7 @@
     .error { color: red; }
     .success { color: green; }
     .action-buttons { margin-top: 20px; }
+    .back-btn { margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -59,34 +62,48 @@
         </div>
 
         <div class="panel">
-          <h3>Solicitações Atendidas</h3>
-          <div id="attendedList" style="max-height: 400px; overflow-y: auto;"></div>
+          <h3>Consultas</h3>
+          <button id="viewAttendedBtn" class="btn btn-primary" style="width:100%;">📋 Ver Solicitações Atendidas</button>
         </div>
       </div>
 
       <!-- Conteúdo principal -->
       <div class="content">
-        <div id="requestDetails" class="panel">
-          <h3>Detalhes da Solicitação</h3>
-          <p>Selecione uma solicitação na lista ao lado.</p>
+        <!-- Área de detalhes da solicitação (visível por padrão) -->
+        <div id="requestDetailsArea">
+          <div id="requestDetails" class="panel">
+            <h3>Detalhes da Solicitação</h3>
+            <p>Selecione uma solicitação na lista ao lado.</p>
+          </div>
+
+          <div id="actionArea" style="display: none;">
+            <div class="action-buttons">
+              <button id="approveBtn" class="btn btn-approve">Deferir (aprovar)</button>
+              <button id="denyBtn" class="btn btn-deny">Indeferir (negar)</button>
+            </div>
+            
+            <div id="approveArea" style="display: none; margin-top: 20px;">
+              <h4>Anexar Croqui (Deferir)</h4>
+              <input type="file" id="croquiFile" accept=".pdf,.jpg,.jpeg,.png">
+              <button id="confirmApproveBtn" class="btn btn-approve" style="margin-top: 10px;">Confirmar Deferimento</button>
+            </div>
+            
+            <div id="denyArea" style="display: none; margin-top: 20px;">
+              <h4>Motivo do Indeferimento</h4>
+              <textarea id="denyReason" rows="4" style="width: 100%;"></textarea>
+              <button id="confirmDenyBtn" class="btn btn-deny" style="margin-top: 10px;">Confirmar Indeferimento</button>
+            </div>
+          </div>
         </div>
 
-        <div id="actionArea" style="display: none;">
-          <div class="action-buttons">
-            <button id="approveBtn" class="btn btn-approve">Deferir (aprovar)</button>
-            <button id="denyBtn" class="btn btn-deny">Indeferir (negar)</button>
-          </div>
-          
-          <div id="approveArea" style="display: none; margin-top: 20px;">
-            <h4>Anexar Croqui (Deferir)</h4>
-            <input type="file" id="croquiFile" accept=".pdf,.jpg,.jpeg,.png">
-            <button id="confirmApproveBtn" class="btn btn-approve" style="margin-top: 10px;">Confirmar Deferimento</button>
-          </div>
-          
-          <div id="denyArea" style="display: none; margin-top: 20px;">
-            <h4>Motivo do Indeferimento</h4>
-            <textarea id="denyReason" rows="4" style="width: 100%;"></textarea>
-            <button id="confirmDenyBtn" class="btn btn-deny" style="margin-top: 10px;">Confirmar Indeferimento</button>
+        <!-- Área da tabela de atendidas (inicialmente oculta) -->
+        <div id="attendedTableArea" style="display: none;">
+          <div class="panel">
+            <div class="back-btn">
+              <button id="backToDetailsBtn" class="btn btn-primary">← Voltar para detalhes</button>
+            </div>
+            <h3>Todas as Solicitações Atendidas</h3>
+            <div id="attendedTableContainer"></div>
           </div>
         </div>
 
@@ -190,6 +207,10 @@
 
     // ===== CARREGAR DETALHES =====
     window.selecionarSolicitacao = async (id) => {
+      // Esconder tabela de atendidas se estiver visível e mostrar área de detalhes
+      document.getElementById('attendedTableArea').style.display = 'none';
+      document.getElementById('requestDetailsArea').style.display = 'block';
+
       selectedRequestId = id;
       
       const { data: request, error } = await supabase
@@ -235,9 +256,11 @@
       await carregarPendentes(); // atualiza classe selected
     };
 
-    // ===== CARREGAR ATENDIDAS =====
-    async function carregarAtendidas() {
-      console.log('Carregando solicitações atendidas...');
+    // ===== CARREGAR TABELA DE ATENDIDAS =====
+    async function carregarTabelaAtendidas() {
+      const container = document.getElementById('attendedTableContainer');
+      container.innerHTML = '<p>Carregando...</p>';
+
       const { data, error } = await supabase
         .from('croqui_requests')
         .select('*')
@@ -246,12 +269,12 @@
 
       if (error) {
         console.error('Erro ao carregar atendidas:', error);
-        document.getElementById('attendedList').innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
+        container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
         return;
       }
 
       if (!data || data.length === 0) {
-        document.getElementById('attendedList').innerHTML = '<p>Nenhuma solicitação atendida ainda.</p>';
+        container.innerHTML = '<p>Nenhuma solicitação atendida ainda.</p>';
         return;
       }
 
@@ -294,7 +317,7 @@
       }
 
       html += `</tbody></table>`;
-      document.getElementById('attendedList').innerHTML = html;
+      container.innerHTML = html;
     }
 
     // ===== CONFIGURAÇÃO DOS BOTÕES =====
@@ -328,7 +351,6 @@
         try {
           console.log('Enviando deferimento para solicitação:', selectedRequestId);
           
-          // Upload do croqui
           const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
           const { error: uploadError } = await supabase.storage
             .from('documentos')
@@ -340,7 +362,6 @@
             .getPublicUrl(fileName);
           const croquiUrl = urlData.publicUrl;
 
-          // Atualizar solicitação
           const { error: updateError } = await supabase
             .from('croqui_requests')
             .update({
@@ -355,16 +376,17 @@
 
           alert('Solicitação deferida com sucesso!');
           
-          // Limpar campos e UI
           fileInput.value = '';
           document.getElementById('approveArea').style.display = 'none';
           document.getElementById('actionArea').style.display = 'none';
           document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
           
-          // Recarregar listas
           selectedRequestId = null;
           await carregarPendentes();
-          await carregarAtendidas();
+          // Se a tabela de atendidas estiver visível, recarregá-la também
+          if (document.getElementById('attendedTableArea').style.display === 'block') {
+            await carregarTabelaAtendidas();
+          }
         } catch (err) {
           console.error('Erro ao deferir:', err);
           alert('Erro ao deferir: ' + err.message);
@@ -401,22 +423,39 @@
 
           alert('Solicitação indeferida com sucesso!');
           
-          // Limpar campos e UI
           document.getElementById('denyReason').value = '';
           document.getElementById('denyArea').style.display = 'none';
           document.getElementById('actionArea').style.display = 'none';
           document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
           
-          // Recarregar listas
           selectedRequestId = null;
           await carregarPendentes();
-          await carregarAtendidas();
+          if (document.getElementById('attendedTableArea').style.display === 'block') {
+            await carregarTabelaAtendidas();
+          }
         } catch (err) {
           console.error('Erro ao indeferir:', err);
           alert('Erro ao indeferir: ' + err.message);
         }
       });
     }
+
+    // ===== EVENTOS DE NAVEGAÇÃO =====
+    document.getElementById('viewAttendedBtn').addEventListener('click', async () => {
+      // Esconder área de detalhes e mostrar tabela de atendidas
+      document.getElementById('requestDetailsArea').style.display = 'none';
+      document.getElementById('attendedTableArea').style.display = 'block';
+      await carregarTabelaAtendidas();
+    });
+
+    document.getElementById('backToDetailsBtn').addEventListener('click', () => {
+      document.getElementById('attendedTableArea').style.display = 'none';
+      document.getElementById('requestDetailsArea').style.display = 'block';
+      // Se houver uma solicitação selecionada, recarrega seus detalhes
+      if (selectedRequestId) {
+        window.selecionarSolicitacao(selectedRequestId);
+      }
+    });
 
     // ===== LOGOUT =====
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -427,7 +466,6 @@
     // ===== INICIALIZAÇÃO =====
     (async () => {
       await carregarPendentes();
-      await carregarAtendidas();
       setupActionButtons();
     })();
   </script>
