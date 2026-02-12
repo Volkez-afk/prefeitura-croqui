@@ -22,7 +22,7 @@
     .btn-approve { background: #52c41a; color: white; }
     .btn-deny { background: #ff4d4f; color: white; }
     .btn:hover { opacity: 0.9; }
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background: #f2f2f2; }
     .error { color: red; }
@@ -42,7 +42,7 @@
       <a href="servidor-login.html">Ir para login</a>
     </div>
 
-    <div id="mainContent" style="display: none;">
+    <div id="mainContent" style="display: block;">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="panel">
@@ -71,7 +71,6 @@
           <p>Selecione uma solicitação na lista ao lado.</p>
         </div>
 
-        <!-- Área de ações (aparece quando uma solicitação é selecionada) -->
         <div id="actionArea" style="display: none;">
           <div class="action-buttons">
             <button id="approveBtn" class="btn btn-approve">Deferir (aprovar)</button>
@@ -228,7 +227,7 @@
 
       document.getElementById('requestDetails').innerHTML = html;
       
-      // Mostra a área de ações e esconde subáreas
+      // Mostra a área de ações
       document.getElementById('actionArea').style.display = 'block';
       document.getElementById('approveArea').style.display = 'none';
       document.getElementById('denyArea').style.display = 'none';
@@ -236,125 +235,9 @@
       await carregarPendentes(); // atualiza classe selected
     };
 
-    // ===== CONFIGURAÇÃO DOS BOTÕES (DEFERIR/INDEFERIR) =====
-    function setupActionButtons() {
-      // Botão Deferir
-      document.getElementById('approveBtn').addEventListener('click', () => {
-        document.getElementById('approveArea').style.display = 'block';
-        document.getElementById('denyArea').style.display = 'none';
-      });
-
-      // Botão Indeferir
-      document.getElementById('denyBtn').addEventListener('click', () => {
-        document.getElementById('denyArea').style.display = 'block';
-        document.getElementById('approveArea').style.display = 'none';
-      });
-
-      // Confirmar Deferimento (upload do croqui)
-      document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
-        if (!selectedRequestId) {
-          alert('Nenhuma solicitação selecionada.');
-          return;
-        }
-
-        const fileInput = document.getElementById('croquiFile');
-        const file = fileInput.files[0];
-        if (!file) {
-          alert('Selecione o arquivo do croqui.');
-          return;
-        }
-
-        try {
-          // Upload do croqui
-          const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
-          const { error: uploadError } = await supabase.storage
-            .from('documentos')
-            .upload(fileName, file);
-          if (uploadError) throw uploadError;
-
-          const { data: urlData } = supabase.storage
-            .from('documentos')
-            .getPublicUrl(fileName);
-          const croquiUrl = urlData.publicUrl;
-
-          // Atualizar solicitação
-          const { error: updateError } = await supabase
-            .from('croqui_requests')
-            .update({
-              status: 'approved',
-              analyzed_by: servidor.id,
-              deferred_document_url: croquiUrl,
-              analyzed_at: new Date()
-            })
-            .eq('id', selectedRequestId);
-
-          if (updateError) throw updateError;
-
-          alert('Solicitação deferida com sucesso!');
-          
-          // Limpar campos
-          fileInput.value = '';
-          document.getElementById('approveArea').style.display = 'none';
-          document.getElementById('actionArea').style.display = 'none';
-          document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
-          
-          // Recarregar listas
-          await carregarPendentes();
-          await carregarAtendidas();
-          selectedRequestId = null;
-        } catch (err) {
-          console.error(err);
-          alert('Erro ao deferir: ' + err.message);
-        }
-      });
-
-      // Confirmar Indeferimento (motivo)
-      document.getElementById('confirmDenyBtn').addEventListener('click', async () => {
-        if (!selectedRequestId) {
-          alert('Nenhuma solicitação selecionada.');
-          return;
-        }
-
-        const reason = document.getElementById('denyReason').value.trim();
-        if (!reason) {
-          alert('Digite o motivo do indeferimento.');
-          return;
-        }
-
-        try {
-          const { error: updateError } = await supabase
-            .from('croqui_requests')
-            .update({
-              status: 'denied',
-              analyzed_by: servidor.id,
-              denial_reason: reason,
-              analyzed_at: new Date()
-            })
-            .eq('id', selectedRequestId);
-
-          if (updateError) throw updateError;
-
-          alert('Solicitação indeferida com sucesso!');
-          
-          // Limpar campos
-          document.getElementById('denyReason').value = '';
-          document.getElementById('denyArea').style.display = 'none';
-          document.getElementById('actionArea').style.display = 'none';
-          document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
-          
-          // Recarregar listas
-          await carregarPendentes();
-          await carregarAtendidas();
-          selectedRequestId = null;
-        } catch (err) {
-          console.error(err);
-          alert('Erro ao indeferir: ' + err.message);
-        }
-      });
-    }
-
     // ===== CARREGAR ATENDIDAS =====
     async function carregarAtendidas() {
+      console.log('Carregando solicitações atendidas...');
       const { data, error } = await supabase
         .from('croqui_requests')
         .select('*')
@@ -392,16 +275,16 @@
         const municipe = await buscarMunicipePorUserId(req.user_id);
         const servidorInfo = await buscarServidorPorId(req.analyzed_by);
         
-        const statusMap = {
-          approved: '✅ Deferido',
-          denied: '❌ Indeferido',
-          forwarded: '↪️ Encaminhado'
-        };
+        let statusText = '';
+        if (req.status === 'approved') statusText = '✅ Deferido';
+        else if (req.status === 'denied') statusText = '❌ Indeferido';
+        else if (req.status === 'forwarded') statusText = '↪️ Encaminhado';
+        else statusText = req.status;
         
         html += `<tr>
           <td>${municipe?.full_name || '-'}</td>
           <td>${req.logradouro || '-'}</td>
-          <td>${statusMap[req.status] || req.status}</td>
+          <td>${statusText}</td>
           <td>${servidorInfo?.nome || '-'}</td>
           <td>${servidorInfo?.ri || '-'}</td>
           <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
@@ -414,6 +297,127 @@
       document.getElementById('attendedList').innerHTML = html;
     }
 
+    // ===== CONFIGURAÇÃO DOS BOTÕES =====
+    function setupActionButtons() {
+      // Botão Deferir
+      document.getElementById('approveBtn').addEventListener('click', () => {
+        document.getElementById('approveArea').style.display = 'block';
+        document.getElementById('denyArea').style.display = 'none';
+      });
+
+      // Botão Indeferir
+      document.getElementById('denyBtn').addEventListener('click', () => {
+        document.getElementById('denyArea').style.display = 'block';
+        document.getElementById('approveArea').style.display = 'none';
+      });
+
+      // Confirmar Deferimento
+      document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
+        if (!selectedRequestId) {
+          alert('Nenhuma solicitação selecionada.');
+          return;
+        }
+
+        const fileInput = document.getElementById('croquiFile');
+        const file = fileInput.files[0];
+        if (!file) {
+          alert('Selecione o arquivo do croqui.');
+          return;
+        }
+
+        try {
+          console.log('Enviando deferimento para solicitação:', selectedRequestId);
+          
+          // Upload do croqui
+          const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
+          const { error: uploadError } = await supabase.storage
+            .from('documentos')
+            .upload(fileName, file);
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase.storage
+            .from('documentos')
+            .getPublicUrl(fileName);
+          const croquiUrl = urlData.publicUrl;
+
+          // Atualizar solicitação
+          const { error: updateError } = await supabase
+            .from('croqui_requests')
+            .update({
+              status: 'approved',
+              analyzed_by: servidor.id,
+              deferred_document_url: croquiUrl,
+              analyzed_at: new Date()
+            })
+            .eq('id', selectedRequestId);
+
+          if (updateError) throw updateError;
+
+          alert('Solicitação deferida com sucesso!');
+          
+          // Limpar campos e UI
+          fileInput.value = '';
+          document.getElementById('approveArea').style.display = 'none';
+          document.getElementById('actionArea').style.display = 'none';
+          document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
+          
+          // Recarregar listas
+          selectedRequestId = null;
+          await carregarPendentes();
+          await carregarAtendidas();
+        } catch (err) {
+          console.error('Erro ao deferir:', err);
+          alert('Erro ao deferir: ' + err.message);
+        }
+      });
+
+      // Confirmar Indeferimento
+      document.getElementById('confirmDenyBtn').addEventListener('click', async () => {
+        if (!selectedRequestId) {
+          alert('Nenhuma solicitação selecionada.');
+          return;
+        }
+
+        const reason = document.getElementById('denyReason').value.trim();
+        if (!reason) {
+          alert('Digite o motivo do indeferimento.');
+          return;
+        }
+
+        try {
+          console.log('Enviando indeferimento para solicitação:', selectedRequestId);
+          
+          const { error: updateError } = await supabase
+            .from('croqui_requests')
+            .update({
+              status: 'denied',
+              analyzed_by: servidor.id,
+              denial_reason: reason,
+              analyzed_at: new Date()
+            })
+            .eq('id', selectedRequestId);
+
+          if (updateError) throw updateError;
+
+          alert('Solicitação indeferida com sucesso!');
+          
+          // Limpar campos e UI
+          document.getElementById('denyReason').value = '';
+          document.getElementById('denyArea').style.display = 'none';
+          document.getElementById('actionArea').style.display = 'none';
+          document.getElementById('requestDetails').innerHTML = '<h3>Detalhes da Solicitação</h3><p>Selecione uma solicitação na lista ao lado.</p>';
+          
+          // Recarregar listas
+          selectedRequestId = null;
+          await carregarPendentes();
+          await carregarAtendidas();
+        } catch (err) {
+          console.error('Erro ao indeferir:', err);
+          alert('Erro ao indeferir: ' + err.message);
+        }
+      });
+    }
+
     // ===== LOGOUT =====
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.removeItem('servidor');
@@ -424,7 +428,7 @@
     (async () => {
       await carregarPendentes();
       await carregarAtendidas();
-      setupActionButtons(); // Configura os botões após a página carregar
+      setupActionButtons();
     })();
   </script>
 </body>
