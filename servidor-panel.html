@@ -11,7 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Estilo padrão do portal (idêntico ao solicitar.html / admin) -->
   <style>
     /* ========== RESET E VARIÁVEIS ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -330,6 +329,7 @@
       text-align: center;
       background: #f8fafc;
       margin-top: 16px;
+      cursor: pointer;
     }
     .upload-area:hover {
       border-color: #2563eb;
@@ -374,6 +374,15 @@
     }
     tr:hover td {
       background: #f8fafc;
+    }
+    .status-link {
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .status-link:hover {
+      color: #1d4ed8;
     }
 
     /* ----- MENSAGENS ----- */
@@ -590,6 +599,13 @@
     </div>
   </div>
 
+  <!-- Botão de logout flutuante (fora do dashboard para evitar erros) -->
+  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+    <button id="logoutBtn" class="btn" style="background: #ef4444; color: white; border-radius: 40px; padding: 12px 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <i class="fas fa-sign-out-alt"></i> Sair
+    </button>
+  </div>
+
   <!-- ========== RODAPÉ ========== -->
   <footer>
     <div class="container">
@@ -608,11 +624,9 @@
   </footer>
 
   <script type="module">
-    // ===== TODO O CÓDIGO JS PERMANECE EXATAMENTE IGUAL =====
-    // ===== APENAS O VISUAL FOI ALTERADO =====
     import { supabase } from './js/supabaseClient.js';
 
-    // Verificação de login
+    // ========== VERIFICAÇÃO DE LOGIN ==========
     const servidorSession = localStorage.getItem('servidor');
     const mainContent = document.getElementById('mainContent');
 
@@ -623,19 +637,21 @@
     let servidor;
     try {
       servidor = JSON.parse(servidorSession);
-      document.getElementById('servidorNome').textContent = servidor.nome || 'Servidor';
-      document.getElementById('servidorRI').textContent = servidor.ri || '';
+      const nomeEl = document.getElementById('servidorNome');
+      const riEl = document.getElementById('servidorRI');
+      if (nomeEl) nomeEl.textContent = servidor.nome || 'Servidor';
+      if (riEl) riEl.textContent = servidor.ri || '';
     } catch (e) {
       localStorage.removeItem('servidor');
       window.location.href = 'servidor-login.html';
     }
 
-    mainContent.style.display = 'block';
+    if (mainContent) mainContent.style.display = 'block';
 
-    // Variáveis globais
+    // ========== VARIÁVEIS GLOBAIS ==========
     let selectedRequestId = null;
 
-    // Funções auxiliares
+    // ========== FUNÇÕES AUXILIARES ==========
     async function buscarMunicipePorUserId(userId) {
       const { data, error } = await supabase
         .from('municipes')
@@ -663,8 +679,11 @@
       return data;
     }
 
-    // Carregar pendentes
+    // ========== CARREGAR PENDENTES ==========
     async function carregarPendentes() {
+      const listEl = document.getElementById('pendingList');
+      if (!listEl) return;
+
       const { data, error } = await supabase
         .from('croqui_requests')
         .select('id, user_id, iptu, logradouro, quadra, lote, created_at')
@@ -673,11 +692,10 @@
 
       if (error) {
         console.error('Erro ao carregar pendentes:', error);
-        document.getElementById('pendingList').innerHTML = '<li>Erro ao carregar pendentes.</li>';
+        listEl.innerHTML = '<li style="color:red;">Erro ao carregar pendentes.</li>';
         return;
       }
 
-      const listEl = document.getElementById('pendingList');
       if (!data || data.length === 0) {
         listEl.innerHTML = '<li>Nenhuma solicitação pendente.</li>';
         return;
@@ -697,10 +715,12 @@
       listEl.innerHTML = html;
     }
 
-    // Selecionar solicitação
+    // ========== SELECIONAR SOLICITAÇÃO ==========
     window.selecionarSolicitacao = async (id) => {
-      document.getElementById('attendedTableArea').style.display = 'none';
-      document.getElementById('requestDetailsArea').style.display = 'block';
+      const attendedArea = document.getElementById('attendedTableArea');
+      const detailsArea = document.getElementById('requestDetailsArea');
+      if (attendedArea) attendedArea.style.display = 'none';
+      if (detailsArea) detailsArea.style.display = 'block';
 
       selectedRequestId = id;
       
@@ -710,8 +730,11 @@
         .eq('id', id)
         .single();
 
+      const detailsEl = document.getElementById('requestDetails');
+      if (!detailsEl) return;
+
       if (error || !request) {
-        document.getElementById('requestDetails').innerHTML = '<p style="color:red;">Erro ao carregar detalhes.</p>';
+        detailsEl.innerHTML = '<p style="color:red;">Erro ao carregar detalhes.</p>';
         return;
       }
 
@@ -732,17 +755,23 @@
         </div>
       `;
 
-      document.getElementById('requestDetails').innerHTML = html;
-      document.getElementById('actionArea').style.display = 'block';
-      document.getElementById('approveArea').style.display = 'none';
-      document.getElementById('denyArea').style.display = 'none';
+      detailsEl.innerHTML = html;
+      
+      const actionArea = document.getElementById('actionArea');
+      if (actionArea) actionArea.style.display = 'block';
+      
+      const approveArea = document.getElementById('approveArea');
+      const denyArea = document.getElementById('denyArea');
+      if (approveArea) approveArea.style.display = 'none';
+      if (denyArea) denyArea.style.display = 'none';
       
       await carregarPendentes();
     };
 
-    // Carregar tabela de atendidas
+    // ========== CARREGAR TABELA DE ATENDIDAS (COM STATUS CLICÁVEL) ==========
     async function carregarTabelaAtendidas() {
       const container = document.getElementById('attendedTableContainer');
+      if (!container) return;
       container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
 
       const { data, error } = await supabase
@@ -783,15 +812,29 @@
         const servidorInfo = await buscarServidorPorId(req.analyzed_by);
         
         let statusText = '';
-        if (req.status === 'approved') statusText = '✅ Deferido';
-        else if (req.status === 'denied') statusText = '❌ Indeferido';
-        else if (req.status === 'forwarded') statusText = '↪️ Encaminhado';
-        else statusText = req.status;
+        let statusClass = '';
+        let onclickHandler = '';
+        
+        if (req.status === 'approved') {
+          statusText = '✅ Deferido';
+          statusClass = 'status-link';
+          onclickHandler = `onclick="window.open('${req.deferred_document_url || ''}', '_blank')"`;
+        } else if (req.status === 'denied') {
+          statusText = '❌ Indeferido';
+          statusClass = 'status-link';
+          onclickHandler = `onclick="alert('Motivo do indeferimento:\\n\\n${(req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')"`;
+        } else if (req.status === 'forwarded') {
+          statusText = '↪️ Encaminhado';
+          statusClass = '';
+          onclickHandler = '';
+        } else {
+          statusText = req.status;
+        }
         
         html += `<tr>
           <td>${municipe?.full_name || '-'}</td>
           <td>${req.logradouro || '-'}</td>
-          <td>${statusText}</td>
+          <td><span class="${statusClass}" ${onclickHandler} style="cursor: pointer;">${statusText}</span></td>
           <td>${servidorInfo?.nome || '-'}</td>
           <td>${servidorInfo?.ri || '-'}</td>
           <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
@@ -804,150 +847,194 @@
       container.innerHTML = html;
     }
 
-    // Configurar botões de ação
+    // ========== CONFIGURAÇÃO DOS BOTÕES DE AÇÃO ==========
     function setupActionButtons() {
-      document.getElementById('approveBtn').addEventListener('click', () => {
-        document.getElementById('approveArea').style.display = 'block';
-        document.getElementById('denyArea').style.display = 'none';
-      });
+      const approveBtn = document.getElementById('approveBtn');
+      const denyBtn = document.getElementById('denyBtn');
+      const confirmApprove = document.getElementById('confirmApproveBtn');
+      const confirmDeny = document.getElementById('confirmDenyBtn');
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      const croquiFile = document.getElementById('croquiFile');
 
-      document.getElementById('denyBtn').addEventListener('click', () => {
-        document.getElementById('denyArea').style.display = 'block';
-        document.getElementById('approveArea').style.display = 'none';
-      });
+      if (approveBtn) {
+        approveBtn.addEventListener('click', () => {
+          const approveArea = document.getElementById('approveArea');
+          const denyArea = document.getElementById('denyArea');
+          if (approveArea) approveArea.style.display = 'block';
+          if (denyArea) denyArea.style.display = 'none';
+        });
+      }
 
-      document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
-        if (!selectedRequestId) {
-          alert('Nenhuma solicitação selecionada.');
-          return;
-        }
+      if (denyBtn) {
+        denyBtn.addEventListener('click', () => {
+          const denyArea = document.getElementById('denyArea');
+          const approveArea = document.getElementById('approveArea');
+          if (denyArea) denyArea.style.display = 'block';
+          if (approveArea) approveArea.style.display = 'none';
+        });
+      }
 
-        const fileInput = document.getElementById('croquiFile');
-        const file = fileInput.files[0];
-        if (!file) {
-          alert('Selecione o arquivo do croqui.');
-          return;
-        }
-
-        try {
-          const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
-          const { error: uploadError } = await supabase.storage
-            .from('documentos')
-            .upload(fileName, file);
-          if (uploadError) throw uploadError;
-
-          const { data: urlData } = supabase.storage
-            .from('documentos')
-            .getPublicUrl(fileName);
-          const croquiUrl = urlData.publicUrl;
-
-          const { error: updateError } = await supabase
-            .from('croqui_requests')
-            .update({
-              status: 'approved',
-              analyzed_by: servidor.id,
-              deferred_document_url: croquiUrl,
-              analyzed_at: new Date()
-            })
-            .eq('id', selectedRequestId);
-
-          if (updateError) throw updateError;
-
-          alert('Solicitação deferida com sucesso!');
-          
-          fileInput.value = '';
-          document.getElementById('approveArea').style.display = 'none';
-          document.getElementById('actionArea').style.display = 'none';
-          document.getElementById('requestDetails').innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
-          
-          selectedRequestId = null;
-          await carregarPendentes();
-          if (document.getElementById('attendedTableArea').style.display === 'block') {
-            await carregarTabelaAtendidas();
+      if (fileUploadArea && croquiFile) {
+        fileUploadArea.addEventListener('click', () => croquiFile.click());
+        croquiFile.addEventListener('change', (e) => {
+          const p = fileUploadArea.querySelector('p');
+          if (p) {
+            p.textContent = e.target.files[0]?.name || 'Clique para enviar o croqui';
           }
-        } catch (err) {
-          console.error('Erro ao deferir:', err);
-          alert('Erro ao deferir: ' + err.message);
-        }
-      });
+        });
+      }
 
-      document.getElementById('confirmDenyBtn').addEventListener('click', async () => {
-        if (!selectedRequestId) {
-          alert('Nenhuma solicitação selecionada.');
-          return;
-        }
-
-        const reason = document.getElementById('denyReason').value.trim();
-        if (!reason) {
-          alert('Digite o motivo do indeferimento.');
-          return;
-        }
-
-        try {
-          const { error: updateError } = await supabase
-            .from('croqui_requests')
-            .update({
-              status: 'denied',
-              analyzed_by: servidor.id,
-              denial_reason: reason,
-              analyzed_at: new Date()
-            })
-            .eq('id', selectedRequestId);
-
-          if (updateError) throw updateError;
-
-          alert('Solicitação indeferida com sucesso!');
-          
-          document.getElementById('denyReason').value = '';
-          document.getElementById('denyArea').style.display = 'none';
-          document.getElementById('actionArea').style.display = 'none';
-          document.getElementById('requestDetails').innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
-          
-          selectedRequestId = null;
-          await carregarPendentes();
-          if (document.getElementById('attendedTableArea').style.display === 'block') {
-            await carregarTabelaAtendidas();
+      if (confirmApprove) {
+        confirmApprove.addEventListener('click', async () => {
+          if (!selectedRequestId) {
+            alert('Nenhuma solicitação selecionada.');
+            return;
           }
-        } catch (err) {
-          console.error('Erro ao indeferir:', err);
-          alert('Erro ao indeferir: ' + err.message);
+
+          const fileInput = document.getElementById('croquiFile');
+          const file = fileInput?.files[0];
+          if (!file) {
+            alert('Selecione o arquivo do croqui.');
+            return;
+          }
+
+          try {
+            const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
+            const { error: uploadError } = await supabase.storage
+              .from('documentos')
+              .upload(fileName, file);
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+              .from('documentos')
+              .getPublicUrl(fileName);
+            const croquiUrl = urlData.publicUrl;
+
+            const { error: updateError } = await supabase
+              .from('croqui_requests')
+              .update({
+                status: 'approved',
+                analyzed_by: servidor.id,
+                deferred_document_url: croquiUrl,
+                analyzed_at: new Date()
+              })
+              .eq('id', selectedRequestId);
+
+            if (updateError) throw updateError;
+
+            alert('Solicitação deferida com sucesso!');
+            
+            if (fileInput) fileInput.value = '';
+            const approveArea = document.getElementById('approveArea');
+            if (approveArea) approveArea.style.display = 'none';
+            const actionArea = document.getElementById('actionArea');
+            if (actionArea) actionArea.style.display = 'none';
+            
+            const detailsEl = document.getElementById('requestDetails');
+            if (detailsEl) {
+              detailsEl.innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
+            }
+            
+            selectedRequestId = null;
+            await carregarPendentes();
+            if (document.getElementById('attendedTableArea')?.style.display === 'block') {
+              await carregarTabelaAtendidas();
+            }
+          } catch (err) {
+            console.error('Erro ao deferir:', err);
+            alert('Erro ao deferir: ' + err.message);
+          }
+        });
+      }
+
+      if (confirmDeny) {
+        confirmDeny.addEventListener('click', async () => {
+          if (!selectedRequestId) {
+            alert('Nenhuma solicitação selecionada.');
+            return;
+          }
+
+          const reasonTextarea = document.getElementById('denyReason');
+          const reason = reasonTextarea?.value.trim();
+          if (!reason) {
+            alert('Digite o motivo do indeferimento.');
+            return;
+          }
+
+          try {
+            const { error: updateError } = await supabase
+              .from('croqui_requests')
+              .update({
+                status: 'denied',
+                analyzed_by: servidor.id,
+                denial_reason: reason,
+                analyzed_at: new Date()
+              })
+              .eq('id', selectedRequestId);
+
+            if (updateError) throw updateError;
+
+            alert('Solicitação indeferida com sucesso!');
+            
+            if (reasonTextarea) reasonTextarea.value = '';
+            const denyArea = document.getElementById('denyArea');
+            if (denyArea) denyArea.style.display = 'none';
+            const actionArea = document.getElementById('actionArea');
+            if (actionArea) actionArea.style.display = 'none';
+            
+            const detailsEl = document.getElementById('requestDetails');
+            if (detailsEl) {
+              detailsEl.innerHTML = '<h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2><p style="color: #64748b;">Selecione uma solicitação na lista ao lado.</p>';
+            }
+            
+            selectedRequestId = null;
+            await carregarPendentes();
+            if (document.getElementById('attendedTableArea')?.style.display === 'block') {
+              await carregarTabelaAtendidas();
+            }
+          } catch (err) {
+            console.error('Erro ao indeferir:', err);
+            alert('Erro ao indeferir: ' + err.message);
+          }
+        });
+      }
+    }
+
+    // ========== EVENTOS DE NAVEGAÇÃO ==========
+    const viewAttendedBtn = document.getElementById('viewAttendedBtn');
+    const backToDetailsBtn = document.getElementById('backToDetailsBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (viewAttendedBtn) {
+      viewAttendedBtn.addEventListener('click', async () => {
+        const detailsArea = document.getElementById('requestDetailsArea');
+        const attendedArea = document.getElementById('attendedTableArea');
+        if (detailsArea) detailsArea.style.display = 'none';
+        if (attendedArea) attendedArea.style.display = 'block';
+        await carregarTabelaAtendidas();
+      });
+    }
+
+    if (backToDetailsBtn) {
+      backToDetailsBtn.addEventListener('click', () => {
+        const attendedArea = document.getElementById('attendedTableArea');
+        const detailsArea = document.getElementById('requestDetailsArea');
+        if (attendedArea) attendedArea.style.display = 'none';
+        if (detailsArea) detailsArea.style.display = 'block';
+        if (selectedRequestId) {
+          window.selecionarSolicitacao(selectedRequestId);
         }
       });
     }
 
-    // Eventos de navegação
-    document.getElementById('viewAttendedBtn').addEventListener('click', async () => {
-      document.getElementById('requestDetailsArea').style.display = 'none';
-      document.getElementById('attendedTableArea').style.display = 'block';
-      await carregarTabelaAtendidas();
-    });
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('servidor');
+        window.location.href = 'servidor-login.html';
+      });
+    }
 
-    document.getElementById('backToDetailsBtn').addEventListener('click', () => {
-      document.getElementById('attendedTableArea').style.display = 'none';
-      document.getElementById('requestDetailsArea').style.display = 'block';
-      if (selectedRequestId) {
-        window.selecionarSolicitacao(selectedRequestId);
-      }
-    });
-
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.removeItem('servidor');
-      window.location.href = 'servidor-login.html';
-    });
-
-    // Upload area click
-    document.getElementById('fileUploadArea')?.addEventListener('click', () => {
-      document.getElementById('croquiFile').click();
-    });
-    document.getElementById('croquiFile')?.addEventListener('change', (e) => {
-      const span = document.querySelector('#fileUploadArea p');
-      if (span) {
-        span.textContent = e.target.files[0]?.name || 'Clique para enviar o croqui';
-      }
-    });
-
-    // Inicialização
+    // ========== INICIALIZAÇÃO ==========
     (async () => {
       await carregarPendentes();
       setupActionButtons();
