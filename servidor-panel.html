@@ -716,7 +716,7 @@
       listEl.innerHTML = html;
     }
 
-    // ========== SELECIONAR SOLICITAÇÃO (ATUALIZADO COM ESQUINA E MAIS FRENTES) ==========
+    // ========== SELECIONAR SOLICITAÇÃO (CORRIGIDO - CAMPO ÚNICO) ==========
     window.selecionarSolicitacao = async (id) => {
       const attendedArea = document.getElementById('attendedTableArea');
       const detailsArea = document.getElementById('requestDetailsArea');
@@ -748,9 +748,8 @@
       else if (request.servico === 'luz') servicoDisplay = '⚡ Luz';
       else if (request.servico === 'agua_e_luz') servicoDisplay = '💧⚡ Água e Luz';
       
-      // Formatação dos novos campos
-      const esquinaDisplay = request.esquina === 'sim' ? 'Sim' : 'Não';
-      const maisFrenteDisplay = request.mais_de_uma_frente === 'sim' ? 'Sim' : 'Não';
+      // ✅ CAMPO ÚNICO: Esquina ou mais de uma frente?
+      const esquinaOuFrenteDisplay = request.esquina_ou_frente === 'sim' ? 'Sim' : 'Não';
       
       let html = `
         <h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2>
@@ -763,9 +762,8 @@
           <div class="detail-row"><span class="detail-label">Logradouro:</span> <span class="detail-value">${request.logradouro || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Quadra:</span> <span class="detail-value">${request.quadra || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Lote:</span> <span class="detail-value">${request.lote || ''}</span></div>
-          <!-- NOVOS CAMPOS: ESQUINA E MAIS DE UMA FRENTE -->
-          <div class="detail-row"><span class="detail-label">Esquina ou Mais de uma frente ?</span> <span class="detail-value">${esquinaDisplay}</span></div>
-         
+          <!-- ✅ CAMPO ÚNICO: ESQUINA OU MAIS DE UMA FRENTE -->
+          <div class="detail-row"><span class="detail-label">Esquina ou mais de uma frente?</span> <span class="detail-value">${esquinaOuFrenteDisplay}</span></div>
           <div class="detail-row"><span class="detail-label">Tipo de ligação:</span> <span class="detail-value">${servicoDisplay || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Documento de posse:</span> <span class="detail-value">${request.document_url ? `<a href="${request.document_url}" target="_blank" style="color: #2563eb;">Visualizar documento</a>` : 'Não enviado'}</span></div>
         </div>
