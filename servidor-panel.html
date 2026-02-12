@@ -650,7 +650,7 @@
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let selectedRequestId = null;
-    let selectedServico = null; // NOVA VARIÁVEL: armazena o tipo de serviço da solicitação
+    let selectedServico = null;
 
     // ========== FUNÇÕES AUXILIARES ==========
     async function buscarMunicipePorUserId(userId) {
@@ -716,7 +716,7 @@
       listEl.innerHTML = html;
     }
 
-    // ========== SELECIONAR SOLICITAÇÃO (ATUALIZADA) ==========
+    // ========== SELECIONAR SOLICITAÇÃO (ATUALIZADO COM ESQUINA E MAIS FRENTES) ==========
     window.selecionarSolicitacao = async (id) => {
       const attendedArea = document.getElementById('attendedTableArea');
       const detailsArea = document.getElementById('requestDetailsArea');
@@ -739,16 +739,18 @@
         return;
       }
 
-      // --- NOVO: Armazenar o tipo de serviço da solicitação ---
       selectedServico = request.servico;
 
       const municipe = await buscarMunicipePorUserId(request.user_id);
       
-      // Mapear o serviço para exibição amigável
       let servicoDisplay = '';
       if (request.servico === 'agua') servicoDisplay = '💧 Água';
       else if (request.servico === 'luz') servicoDisplay = '⚡ Luz';
       else if (request.servico === 'agua_e_luz') servicoDisplay = '💧⚡ Água e Luz';
+      
+      // Formatação dos novos campos
+      const esquinaDisplay = request.esquina === 'sim' ? 'Sim' : 'Não';
+      const maisFrenteDisplay = request.mais_de_uma_frente === 'sim' ? 'Sim' : 'Não';
       
       let html = `
         <h2 style="color: #0a4b6e; margin-bottom: 16px;">Detalhes da Solicitação</h2>
@@ -761,6 +763,9 @@
           <div class="detail-row"><span class="detail-label">Logradouro:</span> <span class="detail-value">${request.logradouro || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Quadra:</span> <span class="detail-value">${request.quadra || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Lote:</span> <span class="detail-value">${request.lote || ''}</span></div>
+          <!-- NOVOS CAMPOS: ESQUINA E MAIS DE UMA FRENTE -->
+          <div class="detail-row"><span class="detail-label">Esquina?</span> <span class="detail-value">${esquinaDisplay}</span></div>
+          <div class="detail-row"><span class="detail-label">Mais de uma frente?</span> <span class="detail-value">${maisFrenteDisplay}</span></div>
           <div class="detail-row"><span class="detail-label">Tipo de ligação:</span> <span class="detail-value">${servicoDisplay || ''}</span></div>
           <div class="detail-row"><span class="detail-label">Documento de posse:</span> <span class="detail-value">${request.document_url ? `<a href="${request.document_url}" target="_blank" style="color: #2563eb;">Visualizar documento</a>` : 'Não enviado'}</span></div>
         </div>
@@ -888,7 +893,6 @@
         });
       }
 
-      // ========== BOTÃO CONFIRMAR DEFERIMENTO (ATUALIZADO) ==========
       if (confirmApprove) {
         confirmApprove.addEventListener('click', async () => {
           if (!selectedRequestId) {
@@ -904,7 +908,6 @@
           }
 
           try {
-            // 1. Upload do croqui
             const fileName = `croquis/${selectedRequestId}_${Date.now()}.${file.name.split('.').pop()}`;
             const { error: uploadError } = await supabase.storage
               .from('documentos')
@@ -916,7 +919,6 @@
               .getPublicUrl(fileName);
             const croquiUrl = urlData.publicUrl;
 
-            // 2. Atualizar a solicitação
             const { error: updateError } = await supabase
               .from('croqui_requests')
               .update({
@@ -929,14 +931,11 @@
 
             if (updateError) throw updateError;
 
-            // ========== NOVO: ENCAMINHAR PARA CONCESSIONÁRIAS ==========
-            // Determinar concessionárias destino baseado no serviço
             const destinos = [];
             if (selectedServico === 'agua') destinos.push('sabesp');
             else if (selectedServico === 'luz') destinos.push('cpfl');
             else if (selectedServico === 'agua_e_luz') { destinos.push('sabesp'); destinos.push('cpfl'); }
 
-            // Criar tarefas pendentes para cada concessionária
             for (const tipo of destinos) {
               const { error: insertTarefaError } = await supabase
                 .from('concessao_tarefas')
@@ -955,7 +954,6 @@
 
             alert('Solicitação deferida e encaminhada com sucesso!');
             
-            // 3. Limpar campos e UI
             if (fileInput) fileInput.value = '';
             const approveArea = document.getElementById('approveArea');
             if (approveArea) approveArea.style.display = 'none';
@@ -968,7 +966,7 @@
             }
             
             selectedRequestId = null;
-            selectedServico = null; // Limpar a variável de serviço
+            selectedServico = null;
             
             await carregarPendentes();
             if (document.getElementById('attendedTableArea')?.style.display === 'block') {
@@ -981,7 +979,6 @@
         });
       }
 
-      // ========== BOTÃO CONFIRMAR INDEFERIMENTO ==========
       if (confirmDeny) {
         confirmDeny.addEventListener('click', async () => {
           if (!selectedRequestId) {
