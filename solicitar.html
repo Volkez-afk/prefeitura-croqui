@@ -912,41 +912,87 @@
     }
 
     // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM AGENDAMENTOS) ==========
-    async function gerarNotificacoes(solicitacoes) {
-      if (!solicitacoes || solicitacoes.length === 0) {
-        return '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>';
-      }
+   // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM DATA E HORA DO AGENDAMENTO) ==========
+async function gerarNotificacoes(solicitacoes) {
+  if (!solicitacoes || solicitacoes.length === 0) {
+    return '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>';
+  }
 
-      let html = '';
+  let html = '';
+  
+  for (const s of solicitacoes) {
+    const statusLabel = {
+      pending: '⏳ Pendente',
+      approved: '✅ Aprovado',
+      denied: '❌ Negado',
+      forwarded: '↪️ Encaminhado'
+    }[s.status] || s.status;
+    
+    // Ícone do serviço
+    let servicoIcon = '';
+    if (s.servico) {
+      if (s.servico === 'agua') servicoIcon = '<i class="fas fa-tint" style="color: #2563eb;"></i>';
+      else if (s.servico === 'luz') servicoIcon = '<i class="fas fa-bolt" style="color: #f59e0b;"></i>';
+      else if (s.servico === 'agua_e_luz') servicoIcon = '<i class="fas fa-tint" style="color: #2563eb;"></i> <i class="fas fa-bolt" style="color: #f59e0b;"></i>';
+    }
+    
+    // Link para motivo de indeferimento
+    let motivoLink = '';
+    if (s.status === 'denied' && s.denial_reason) {
+      const motivo = s.denial_reason.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      motivoLink = `
+        <div class="motivo-link">
+          <a href="javascript:void(0)" onclick="alert('Motivo do indeferimento:\\n\\n${motivo}')">
+            <i class="fas fa-info-circle"></i> Ver motivo
+          </a>
+        </div>
+      `;
+    }
+    
+    // ========== BUSCAR AGENDAMENTOS (DATA E HORA) ==========
+    let agendamentoHTML = '';
+    if (s.status === 'approved' || s.status === 'forwarded') {
+      const agendamentos = await buscarAgendamentos(s.id);
       
-      for (const s of solicitacoes) {
-        const statusLabel = {
-          pending: '⏳ Pendente',
-          approved: '✅ Aprovado',
-          denied: '❌ Negado',
-          forwarded: '↪️ Encaminhado'
-        }[s.status] || s.status;
-        
-        // Ícone do serviço
-        let servicoIcon = '';
-        if (s.servico) {
-          if (s.servico === 'agua') servicoIcon = '<i class="fas fa-tint" style="color: #2563eb;"></i>';
-          else if (s.servico === 'luz') servicoIcon = '<i class="fas fa-bolt" style="color: #f59e0b;"></i>';
-          else if (s.servico === 'agua_e_luz') servicoIcon = '<i class="fas fa-tint" style="color: #2563eb;"></i> <i class="fas fa-bolt" style="color: #f59e0b;"></i>';
-        }
-        
-        // Link para motivo de indeferimento
-        let motivoLink = '';
-        if (s.status === 'denied' && s.denial_reason) {
-          const motivo = s.denial_reason.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-          motivoLink = `
-            <div class="motivo-link">
-              <a href="javascript:void(0)" onclick="alert('Motivo do indeferimento:\\n\\n${motivo}')">
-                <i class="fas fa-info-circle"></i> Ver motivo
-              </a>
+      if (agendamentos.length > 0) {
+        agendamentoHTML = '<div style="margin-top: 8px;">';
+        agendamentos.forEach(ag => {
+          const dataFormatada = new Date(ag.scheduled_date).toLocaleDateString('pt-BR');
+          const horario = ag.scheduled_time || 'horário não informado';
+          const empresa = ag.concessionaria_tipo === 'sabesp' ? 'SABESP' : 'CPFL';
+          agendamentoHTML += `
+            <div class="agendamento-info">
+              <i class="fas fa-calendar-alt"></i> <strong>${empresa}:</strong> ${dataFormatada}
+              <i class="fas fa-clock" style="margin-left: 8px;"></i> ${horario}
             </div>
           `;
-        }
+        });
+        agendamentoHTML += '</div>';
+      } else {
+        agendamentoHTML = `
+          <div style="margin-top: 8px; font-size: 13px; color: #64748b;">
+            <i class="fas fa-clock"></i> Aguardando agendamento
+          </div>
+        `;
+      }
+    }
+    
+    html += `
+      <div class="notificacao-item status-${s.status}">
+        <div class="notificacao-status">${statusLabel}</div>
+        <div class="notificacao-endereco">
+          ${servicoIcon ? `<span style="margin-right: 6px;">${servicoIcon}</span>` : ''}
+          ${s.logradouro || 'Endereço não informado'}
+        </div>
+        <div class="notificacao-data">${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+        ${motivoLink}
+        ${agendamentoHTML}
+      </div>
+    `;
+  }
+  
+  return html;
+}
         
         // ========== NOVO: Buscar agendamentos para solicitações aprovadas ==========
         let agendamentoHTML = '';
