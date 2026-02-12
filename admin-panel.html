@@ -37,11 +37,21 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
+      transition: all 0.2s;
     }
-    .btn:hover { background: #1d4ed8; }
+    .btn:hover { background: #1d4ed8; transform: scale(1.02); }
     .btn-danger { background: #ef4444; }
     .btn-danger:hover { background: #dc2626; }
     .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-sabesp { background: #e0f2fe; color: #0369a1; }
+    .badge-cpfl { background: #fef3c7; color: #92400e; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -64,7 +74,30 @@
     }
     .form-group { margin-bottom: 16px; }
     label { display: block; font-weight: 600; margin-bottom: 6px; }
-    input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .radio-group {
+      display: flex;
+      gap: 24px;
+      padding: 8px 0;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
+      cursor: pointer;
+    }
     .modal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -116,13 +149,14 @@
       </table>
     </div>
 
-    <!-- ========== SEÇÃO CONCESSIONÁRIAS (SABESP/CPFL) ========== -->
+    <!-- ========== SEÇÃO CONCESSIONÁRIAS (SABESP / CPFL) ========== -->
     <div class="section">
-      <h2>Concessionárias (SABESP / CPFL)</h2>
+      <h2>Concessionárias</h2>
       <button id="addConcessionariaBtn" class="btn">+ Adicionar Usuário</button>
       <table id="concessionariasTable">
         <thead>
           <tr>
+            <th>Empresa</th>
             <th>Usuário</th>
             <th>Senha</th>
             <th>Ações</th>
@@ -157,13 +191,33 @@
     </div>
   </div>
 
-  <!-- ========== MODAL PARA CONCESSIONÁRIA ========== -->
+  <!-- ========== MODAL PARA CONCESSIONÁRIA (COM SELEÇÃO SABESP/CPFL) ========== -->
   <div id="concessionariaModal" class="modal">
     <div class="modal-content">
       <span class="close" id="closeConcessionariaModal">&times;</span>
-      <h2 id="concessionariaModalTitle">Adicionar Usuário (SABESP/CPFL)</h2>
+      <h2 id="concessionariaModalTitle">Adicionar Usuário</h2>
       <form id="concessionariaForm">
         <input type="hidden" id="concessionariaId">
+        
+        <!-- NOVO CAMPO: SELEÇÃO DA EMPRESA -->
+        <div class="form-group">
+          <label>Empresa</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="tipo" value="sabesp" required> 
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <i class="fas fa-tint" style="color: #2563eb;"></i> SABESP
+              </span>
+            </label>
+            <label>
+              <input type="radio" name="tipo" value="cpfl" required>
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <i class="fas fa-bolt" style="color: #f59e0b;"></i> CPFL
+              </span>
+            </label>
+          </div>
+        </div>
+
         <div class="form-group">
           <label>Usuário</label>
           <input type="text" id="concessionariaUsuario" required>
@@ -243,7 +297,7 @@
       document.getElementById('servidorId').value = data.id;
       document.getElementById('servidorNome').value = data.nome;
       document.getElementById('servidorRi').value = data.ri;
-      document.getElementById('servidorSenha').value = ''; // não preenche a senha
+      document.getElementById('servidorSenha').value = '';
       document.getElementById('servidorModal').style.visibility = 'visible';
     }
 
@@ -262,11 +316,12 @@
       }
     }
 
-    // ========== FUNÇÕES PARA CONCESSIONÁRIAS ==========
+    // ========== FUNÇÕES PARA CONCESSIONÁRIAS (COM TIPO) ==========
     async function carregarConcessionarias() {
       const { data, error } = await supabase
         .from('concessionarias')
         .select('*')
+        .order('tipo', { ascending: true })
         .order('usuario', { ascending: true });
 
       if (error) {
@@ -279,7 +334,14 @@
 
       data.forEach(conc => {
         const row = document.createElement('tr');
+        
+        // Badge conforme o tipo
+        const badgeHtml = conc.tipo === 'sabesp' 
+          ? '<span class="badge badge-sabesp"><i class="fas fa-tint"></i> SABESP</span>'
+          : '<span class="badge badge-cpfl"><i class="fas fa-bolt"></i> CPFL</span>';
+        
         row.innerHTML = `
+          <td>${badgeHtml}</td>
           <td>${conc.usuario}</td>
           <td>••••••••</td>
           <td>
@@ -306,10 +368,16 @@
         return;
       }
 
+      // Preencher o formulário
       document.getElementById('concessionariaModalTitle').textContent = 'Editar Usuário';
       document.getElementById('concessionariaId').value = data.id;
       document.getElementById('concessionariaUsuario').value = data.usuario;
-      document.getElementById('concessionariaSenha').value = ''; // não preenche a senha
+      document.getElementById('concessionariaSenha').value = '';
+      
+      // Selecionar o radio button correspondente ao tipo
+      const radioTipo = document.querySelector(`input[name="tipo"][value="${data.tipo}"]`);
+      if (radioTipo) radioTipo.checked = true;
+      
       document.getElementById('concessionariaModal').style.visibility = 'visible';
     }
 
@@ -358,7 +426,6 @@
 
       try {
         if (id) {
-          // Editar
           const updateData = { nome, ri };
           if (senha) updateData.senha = senha;
           const { error } = await supabase
@@ -367,7 +434,6 @@
             .eq('id', id);
           if (error) throw error;
         } else {
-          // Adicionar
           if (!senha) {
             alert('A senha é obrigatória.');
             return;
@@ -391,6 +457,11 @@
       document.getElementById('concessionariaModalTitle').textContent = 'Adicionar Usuário';
       document.getElementById('concessionariaId').value = '';
       document.getElementById('concessionariaForm').reset();
+      
+      // Pré-selecionar SABESP como padrão (opcional)
+      const radioSabesp = document.querySelector('input[name="tipo"][value="sabesp"]');
+      if (radioSabesp) radioSabesp.checked = true;
+      
       document.getElementById('concessionariaModal').style.visibility = 'visible';
     });
 
@@ -399,14 +470,21 @@
       document.getElementById('concessionariaModal').style.visibility = 'hidden';
     });
 
-    // Concessionária - Submissão do formulário
+    // Concessionária - Submissão do formulário (AGORA COM TIPO)
     document.getElementById('concessionariaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const id = document.getElementById('concessionariaId').value;
       const usuario = document.getElementById('concessionariaUsuario').value.trim();
       const senha = document.getElementById('concessionariaSenha').value;
-
+      
+      // Capturar o tipo selecionado (sabesp ou cpfl)
+      const tipoSelecionado = document.querySelector('input[name="tipo"]:checked')?.value;
+      
+      if (!tipoSelecionado) {
+        alert('Selecione a empresa (SABESP ou CPFL).');
+        return;
+      }
       if (!usuario || (!id && !senha)) {
         alert('Preencha todos os campos obrigatórios.');
         return;
@@ -414,23 +492,31 @@
 
       try {
         if (id) {
-          // Editar
-          const updateData = { usuario };
+          // Edição
+          const updateData = { 
+            usuario, 
+            tipo: tipoSelecionado 
+          };
           if (senha) updateData.senha = senha;
+          
           const { error } = await supabase
             .from('concessionarias')
             .update(updateData)
             .eq('id', id);
           if (error) throw error;
         } else {
-          // Adicionar
+          // Adição
           if (!senha) {
             alert('A senha é obrigatória.');
             return;
           }
           const { error } = await supabase
             .from('concessionarias')
-            .insert([{ usuario, senha }]);
+            .insert([{ 
+              usuario, 
+              senha, 
+              tipo: tipoSelecionado 
+            }]);
           if (error) throw error;
         }
 
@@ -456,7 +542,7 @@
       window.location.href = 'admin-login.html';
     });
 
-    // Inicializar
+    // Carregar dados iniciais
     carregarServidores();
     carregarConcessionarias();
   </script>
