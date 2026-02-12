@@ -769,83 +769,79 @@
     };
 
     // ========== CARREGAR TABELA DE ATENDIDAS (COM STATUS CLICÁVEL) ==========
-    async function carregarTabelaAtendidas() {
-      const container = document.getElementById('attendedTableContainer');
-      if (!container) return;
-      container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
+    // ========== CARREGAR TABELA DE ATENDIDAS (VERSÃO SIMPLIFICADA) ==========
+async function carregarTabelaAtendidas() {
+  const container = document.getElementById('attendedTableContainer');
+  if (!container) return;
+  container.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
 
-      const { data, error } = await supabase
-        .from('croqui_requests')
-        .select('*')
-        .in('status', ['approved', 'denied', 'forwarded'])
-        .order('analyzed_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('croqui_requests')
+    .select('*')
+    .in('status', ['approved', 'denied', 'forwarded'])
+    .order('analyzed_at', { ascending: false });
 
-      if (error) {
-        console.error('Erro ao carregar atendidas:', error);
-        container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
-        return;
-      }
+  if (error) {
+    console.error('Erro ao carregar atendidas:', error);
+    container.innerHTML = '<p style="color:red;">Erro ao carregar atendidas.</p>';
+    return;
+  }
 
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="text-align:center; padding: 40px;">Nenhuma solicitação atendida ainda.</p>';
-        return;
-      }
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p style="text-align:center; padding: 40px;">Nenhuma solicitação atendida ainda.</p>';
+    return;
+  }
 
-      let html = `<table>
-        <thead>
-          <tr>
-            <th>Munícipe</th>
-            <th>Endereço</th>
-            <th>Status</th>
-            <th>Servidor</th>
-            <th>RI</th>
-            <th>Data</th>
-            <th>Motivo (se negado)</th>
-            <th>Croqui</th>
-          </tr>
-        </thead>
-        <tbody>
-      `;
+  let html = `<table>
+    <thead>
+      <tr>
+        <th>Munícipe</th>
+        <th>Endereço</th>
+        <th>Status</th>
+        <th>Servidor</th>
+        <th>RI</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
 
-      for (const req of data) {
-        const municipe = await buscarMunicipePorUserId(req.user_id);
-        const servidorInfo = await buscarServidorPorId(req.analyzed_by);
-        
-        let statusText = '';
-        let statusClass = '';
-        let onclickHandler = '';
-        
-        if (req.status === 'approved') {
-          statusText = '✅ Deferido';
-          statusClass = 'status-link';
-          onclickHandler = `onclick="window.open('${req.deferred_document_url || ''}', '_blank')"`;
-        } else if (req.status === 'denied') {
-          statusText = '❌ Indeferido';
-          statusClass = 'status-link';
-          onclickHandler = `onclick="alert('Motivo do indeferimento:\\n\\n${(req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')"`;
-        } else if (req.status === 'forwarded') {
-          statusText = '↪️ Encaminhado';
-          statusClass = '';
-          onclickHandler = '';
-        } else {
-          statusText = req.status;
-        }
-        
-        html += `<tr>
-          <td>${municipe?.full_name || '-'}</td>
-          <td>${req.logradouro || '-'}</td>
-          <td><span class="${statusClass}" ${onclickHandler} style="cursor: pointer;">${statusText}</span></td>
-          <td>${servidorInfo?.nome || '-'}</td>
-          <td>${servidorInfo?.ri || '-'}</td>
-          <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
-          <td>${req.denial_reason || '-'}</td>
-          <td>${req.deferred_document_url ? `<a href="${req.deferred_document_url}" target="_blank" style="color: #2563eb;">Ver croqui</a>` : '-'}</td>
-        </tr>`;
-      }
-
-      html += `</tbody></table>`;
-      container.innerHTML = html;
+  for (const req of data) {
+    const municipe = await buscarMunicipePorUserId(req.user_id);
+    const servidorInfo = await buscarServidorPorId(req.analyzed_by);
+    
+    let statusCell = '';
+    
+    if (req.status === 'approved') {
+      // ✅ Deferido: link que abre o croqui
+      statusCell = `<span class="status-link" onclick="window.open('${req.deferred_document_url || ''}', '_blank')" style="cursor: pointer; color: #10b981; font-weight: 600;">
+                      ✅ Deferido
+                    </span>`;
+    } else if (req.status === 'denied') {
+      // ❌ Indeferido: link que exibe o motivo em alerta
+      const motivo = (req.denial_reason || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      statusCell = `<span class="status-link" onclick="alert('❌ Motivo do indeferimento:\\n\\n${motivo}')" style="cursor: pointer; color: #ef4444; font-weight: 600;">
+                      ❌ Indeferido
+                    </span>`;
+    } else if (req.status === 'forwarded') {
+      statusCell = `<span style="color: #2563eb;">↪️ Encaminhado</span>`;
+    } else {
+      statusCell = req.status;
     }
+    
+    html += `<tr>
+      <td>${municipe?.full_name || '-'}</td>
+      <td>${req.logradouro || '-'}</td>
+      <td>${statusCell}</td>
+      <td>${servidorInfo?.nome || '-'}</td>
+      <td>${servidorInfo?.ri || '-'}</td>
+      <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
+    </tr>`;
+  }
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
 
     // ========== CONFIGURAÇÃO DOS BOTÕES DE AÇÃO ==========
     function setupActionButtons() {
