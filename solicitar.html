@@ -11,7 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Estilo padrão do portal (mesmo do index/cadastro/login) -->
   <style>
     /* ========== RESET E VARIÁVEIS ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -219,6 +218,10 @@
       border-radius: 12px;
       padding: 16px;
       border-left: 4px solid;
+      transition: all 0.2s;
+    }
+    .notificacao-item:hover {
+      background: #f1f5f9;
     }
     .status-pending { border-left-color: #f59e0b; }
     .status-approved { border-left-color: #10b981; }
@@ -237,6 +240,17 @@
     .notificacao-data {
       font-size: 12px;
       color: #64748b;
+    }
+    .motivo-link {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .motivo-link a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+    .motivo-link a:hover {
+      color: #1d4ed8;
     }
 
     /* ----- CONTEÚDO PRINCIPAL (FORMULÁRIO) ----- */
@@ -352,6 +366,19 @@
       color: #64748b;
       font-size: 12px;
     }
+    .radio-group {
+      display: flex;
+      gap: 24px;
+      padding: 8px 0;
+      flex-wrap: wrap;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
+      cursor: pointer;
+    }
     .btn-submit {
       background-color: #2563eb;
       color: white;
@@ -443,6 +470,10 @@
         flex-direction: column;
         gap: 12px;
       }
+      .radio-group {
+        flex-direction: column;
+        gap: 12px;
+      }
     }
 
     /* ----- Verificação de login ----- */
@@ -526,7 +557,6 @@
     </div>
   </footer>
 
-  <!-- SCRIPT PRINCIPAL (MÓDULO) -->
   <script type="module">
     import { supabase } from './js/supabaseClient.js';
 
@@ -566,7 +596,6 @@
         </div>
       `;
     } else {
-      // ----- RENDERIZA O DASHBOARD COMPLETO -----
       renderDashboard(usuario);
     }
 
@@ -644,11 +673,42 @@
                     denied: '❌ Negado',
                     forwarded: '↪️ Encaminhado'
                   }[s.status] || s.status;
+                  
+                  let motivoLink = '';
+                  if (s.status === 'denied' && s.denial_reason) {
+                    const motivo = s.denial_reason.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    motivoLink = `
+                      <div class="motivo-link">
+                        <a href="javascript:void(0)" onclick="alert('Motivo do indeferimento:\\n\\n${motivo}')">
+                          <i class="fas fa-info-circle"></i> Ver motivo
+                        </a>
+                      </div>
+                    `;
+                  }
+                  
+                  let servicoIcon = '';
+                  if (s.servico) {
+                    if (s.servico === 'agua') servicoIcon = '<i class="fas fa-tint" style="color: #2563eb;"></i>';
+                    else if (s.servico === 'luz') servicoIcon = '<i class="fas fa-bolt" style="color: #f59e0b;"></i>';
+                    else if (s.servico === 'agua_e_luz') servicoIcon = '<i class="fas fa-tint"></i> <i class="fas fa-bolt"></i>';
+                  }
+                  
                   return `
                     <div class="notificacao-item status-${s.status}">
                       <div class="notificacao-status">${statusLabel}</div>
-                      <div class="notificacao-endereco">${s.logradouro || 'Endereço não informado'}</div>
+                      <div class="notificacao-endereco">
+                        ${servicoIcon ? `<span style="margin-right: 6px;">${servicoIcon}</span>` : ''}
+                        ${s.logradouro || 'Endereço não informado'}
+                      </div>
                       <div class="notificacao-data">${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+                      ${motivoLink}
+                      ${s.deferred_document_url ? `
+                        <div style="margin-top: 8px;">
+                          <a href="${s.deferred_document_url}" target="_blank" style="color: #2563eb; font-size: 13px; text-decoration: underline;">
+                            <i class="fas fa-file-pdf"></i> Ver croqui
+                          </a>
+                        </div>
+                      ` : ''}
                     </div>
                   `;
                 }).join('') : '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>'}
@@ -707,6 +767,27 @@
                   <label>Logradouro</label>
                   <input type="text" id="logradouro" class="form-control" placeholder="Rua, Avenida, etc." required>
                 </div>
+
+                <!-- TIPO DE LIGAÇÃO (ÁGUA, LUZ ou ÁGUA E LUZ) -->
+                <div class="form-group full-width">
+                  <label>
+                    <i class="fas fa-tint"></i> <i class="fas fa-bolt"></i> Tipo de ligação
+                    <span class="tooltip-icon" data-tooltip="Selecione o serviço desejado para o imóvel">
+                      <i class="fas fa-question-circle"></i>
+                    </span>
+                  </label>
+                  <div class="radio-group">
+                    <label>
+                      <input type="radio" name="servico" value="agua" required> Água
+                    </label>
+                    <label>
+                      <input type="radio" name="servico" value="luz" required> Luz
+                    </label>
+                    <label>
+                      <input type="radio" name="servico" value="agua_e_luz" required> Água e Luz
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <button type="submit" class="btn-submit" id="btnEnviar">
@@ -746,6 +827,7 @@
         const quadra = document.getElementById('quadra').value.trim();
         const lote = document.getElementById('lote').value.trim();
         const logradouro = document.getElementById('logradouro').value.trim();
+        const servico = document.querySelector('input[name="servico"]:checked')?.value;
         const file = fileInput.files[0];
 
         const msgDiv = document.getElementById('solicitacaoMessage');
@@ -772,6 +854,11 @@
         if (!logradouro) {
           msgDiv.className = 'auth-message error-message';
           msgDiv.textContent = 'Preencha o logradouro.';
+          return;
+        }
+        if (!servico) {
+          msgDiv.className = 'auth-message error-message';
+          msgDiv.textContent = 'Selecione o tipo de ligação (Água, Luz ou Água e Luz).';
           return;
         }
         if (!file) {
@@ -803,7 +890,7 @@
             .getPublicUrl(fileName);
           const documentUrl = urlData.publicUrl;
 
-          // 3. Inserir solicitação
+          // 3. Inserir solicitação (agora com o campo 'servico')
           const { error: insertError } = await supabase
             .from('croqui_requests')
             .insert([{
@@ -813,6 +900,7 @@
               quadra: quadra,
               lote: lote,
               logradouro: logradouro,
+              servico: servico,
               status: 'pending'
             }]);
 
