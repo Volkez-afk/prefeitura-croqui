@@ -572,6 +572,7 @@
     const app = document.getElementById('app');
 
     // ----- UTILITÁRIOS -----
+    // (máscara do IPTU mantida, mas campo não obrigatório)
     function formatIPTU(value) {
       return value.replace(/\D/g, '')
         .replace(/(\d{2})(\d)/, '$1.$2')
@@ -607,7 +608,7 @@
       renderDashboard(usuario);
     }
 
-    // ========== BUSCAR AGENDAMENTOS (DATA E HORA) ==========
+    // ========== BUSCAR AGENDAMENTOS ==========
     async function buscarAgendamentos(requestId) {
       const { data, error } = await supabase
         .from('concessao_tarefas')
@@ -699,25 +700,25 @@
           <!-- CONTEÚDO PRINCIPAL (FORMULÁRIO) -->
           <div class="main-content">
             <h2>Solicitar Croqui</h2>
-            <p class="subtitulo">Preencha os dados do imóvel para solicitar o croqui oficial.</p>
+            <p class="subtitulo">Preencha os dados do imóvel para solicitar o croqui oficial. Campos com * são obrigatórios.</p>
             
             <form id="solicitacaoForm" class="form-croqui">
               <div class="form-grid">
-                <!-- IPTU -->
+                <!-- IPTU (opcional) -->
                 <div class="form-group">
                   <label>
-                    Identificação do imóvel
-                    <span class="tooltip-icon" data-tooltip="Número do IPTU do imóvel (formato XX.XXXX.XXXX)">
+                    Identificação do imóvel (IPTU)
+                    <span class="tooltip-icon" data-tooltip="Número do IPTU do imóvel (formato XX.XXXX.XXXX) - opcional">
                       <i class="fas fa-question-circle"></i>
                     </span>
                   </label>
-                  <input type="text" id="iptu" class="form-control" placeholder="00.0000.0000" maxlength="12" required>
+                  <input type="text" id="iptu" class="form-control" placeholder="00.0000.0000" maxlength="12">
                 </div>
 
-                <!-- Documento de posse (upload) -->
+                <!-- DOCUMENTO DE POSSE (OBRIGATÓRIO) -->
                 <div class="form-group full-width">
                   <label>
-                    Documento de comprovação de posse
+                    <span style="color: #dc2626;">*</span> Documento de comprovação de posse
                     <span class="tooltip-icon" data-tooltip="Matrícula, Escritura ou contrato de compra e venda validado por cartório ou assinatura digital">
                       <i class="fas fa-question-circle"></i>
                     </span>
@@ -730,28 +731,54 @@
                   </div>
                 </div>
 
-                <!-- Quadra -->
+                <!-- Quadra (opcional, aceita letras) -->
                 <div class="form-group">
                   <label>Quadra</label>
-                  <input type="text" id="quadra" class="form-control" maxlength="5" placeholder="Apenas números (máx 5)" required>
+                  <input type="text" id="quadra" class="form-control" maxlength="5" placeholder="Ex: 15A (máx 5 caracteres)">
                 </div>
 
-                <!-- Lote -->
+                <!-- Lote (opcional, aceita letras) -->
                 <div class="form-group">
                   <label>Lote</label>
-                  <input type="text" id="lote" class="form-control" maxlength="4" placeholder="Apenas números (máx 4)" required>
+                  <input type="text" id="lote" class="form-control" maxlength="4" placeholder="Ex: 09B (máx 4 caracteres)">
                 </div>
 
-                <!-- Logradouro -->
+                <!-- ENQUETE: ESQUINA? (padrão: Não) -->
                 <div class="form-group full-width">
-                  <label>Logradouro</label>
-                  <input type="text" id="logradouro" class="form-control" placeholder="Rua, Avenida, etc." required>
+                  <label>Esquina?</label>
+                  <div class="radio-group">
+                    <label>
+                      <input type="radio" name="esquina" value="sim"> Sim
+                    </label>
+                    <label>
+                      <input type="radio" name="esquina" value="nao" checked> Não
+                    </label>
+                  </div>
                 </div>
 
-                <!-- TIPO DE LIGAÇÃO (ÁGUA, LUZ ou ÁGUA E LUZ) -->
+                <!-- ENQUETE: MAIS DE UMA FRENTE? (padrão: Não) -->
+                <div class="form-group full-width">
+                  <label>Mais de uma frente?</label>
+                  <div class="radio-group">
+                    <label>
+                      <input type="radio" name="mais_frente" value="sim"> Sim
+                    </label>
+                    <label>
+                      <input type="radio" name="mais_frente" value="nao" checked> Não
+                    </label>
+                  </div>
+                </div>
+
+                <!-- RUA PARA LIGAÇÃO (opcional) -->
+                <div class="form-group full-width">
+                  <label>Rua para qual deseja a Ligação:</label>
+                  <input type="text" id="logradouro" class="form-control" placeholder="Ex: Rua XV de Novembro">
+                </div>
+
+                <!-- TIPO DE LIGAÇÃO (OBRIGATÓRIO) -->
                 <div class="form-group full-width">
                   <label>
-                    <i class="fas fa-tint"></i> <i class="fas fa-bolt"></i> Tipo de ligação
+                    <span style="color: #dc2626;">*</span> <i class="fas fa-tint"></i> <i class="fas fa-bolt"></i> Tipo de ligação
                     <span class="tooltip-icon" data-tooltip="Selecione o serviço desejado para o imóvel">
                       <i class="fas fa-question-circle"></i>
                     </span>
@@ -779,15 +806,24 @@
         </div>
       `;
 
-      // ----- APLICAR MÁSCARAS -----
-      document.getElementById('iptu').addEventListener('input', function(e) {
-        e.target.value = formatIPTU(e.target.value);
-      });
+      // ----- APLICAR MÁSCARA APENAS NO IPTU (se o usuário digitar) -----
+      const iptuField = document.getElementById('iptu');
+      if (iptuField) {
+        iptuField.addEventListener('input', function(e) {
+          // só aplica máscara se tiver números
+          if (e.target.value) {
+            e.target.value = formatIPTU(e.target.value);
+          }
+        });
+      }
+
+      // ----- NÃO HÁ MAIS MÁSCARA NUMÉRICA PARA QUADRA E LOTE -----
+      // Apenas limitamos o comprimento máximo
       document.getElementById('quadra').addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+        if (e.target.value.length > 5) e.target.value = e.target.value.slice(0, 5);
       });
       document.getElementById('lote').addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+        if (e.target.value.length > 4) e.target.value = e.target.value.slice(0, 4);
       });
 
       // ----- UPLOAD DE ARQUIVO (ÁREA CLICÁVEL) -----
@@ -803,47 +839,32 @@
       document.getElementById('solicitacaoForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Campos OBRIGATÓRIOS: documento e tipo de ligação
+        const servico = document.querySelector('input[name="servico"]:checked')?.value;
+        const file = fileInput.files[0];
+
+        // Campos OPCIONAIS
         const iptu = document.getElementById('iptu').value.trim();
         const quadra = document.getElementById('quadra').value.trim();
         const lote = document.getElementById('lote').value.trim();
         const logradouro = document.getElementById('logradouro').value.trim();
-        const servico = document.querySelector('input[name="servico"]:checked')?.value;
-        const file = fileInput.files[0];
+        const esquina = document.querySelector('input[name="esquina"]:checked')?.value || 'nao';
+        const maisFrente = document.querySelector('input[name="mais_frente"]:checked')?.value || 'nao';
 
         const msgDiv = document.getElementById('solicitacaoMessage');
         msgDiv.className = 'auth-message';
         msgDiv.innerHTML = '';
         const btn = document.getElementById('btnEnviar');
 
-        // Validações
-        if (!iptu || iptu.replace(/\D/g, '').length < 10) {
+        // Validações apenas dos campos obrigatórios
+        if (!file) {
           msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'IPTU inválido. Use o formato XX.XXXX.XXXX.';
-          return;
-        }
-        if (!quadra) {
-          msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'Preencha a quadra.';
-          return;
-        }
-        if (!lote) {
-          msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'Preencha o lote.';
-          return;
-        }
-        if (!logradouro) {
-          msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'Preencha o logradouro.';
+          msgDiv.textContent = 'Selecione o documento de posse.';
           return;
         }
         if (!servico) {
           msgDiv.className = 'auth-message error-message';
           msgDiv.textContent = 'Selecione o tipo de ligação (Água, Luz ou Água e Luz).';
-          return;
-        }
-        if (!file) {
-          msgDiv.className = 'auth-message error-message';
-          msgDiv.textContent = 'Selecione o documento de posse.';
           return;
         }
 
@@ -870,17 +891,19 @@
             .getPublicUrl(fileName);
           const documentUrl = urlData.publicUrl;
 
-          // 3. Inserir solicitação
+          // 3. Inserir solicitação (incluindo os novos campos)
           const { error: insertError } = await supabase
             .from('croqui_requests')
             .insert([{
               user_id: municipe.id,
-              iptu: iptu,
+              iptu: iptu || null,
               document_url: documentUrl,
-              quadra: quadra,
-              lote: lote,
-              logradouro: logradouro,
+              quadra: quadra || null,
+              lote: lote || null,
+              logradouro: logradouro || null,
               servico: servico,
+              esquina: esquina,
+              mais_de_uma_frente: maisFrente,
               status: 'pending'
             }]);
 
@@ -896,6 +919,9 @@
           // Limpar formulário
           document.getElementById('solicitacaoForm').reset();
           fileArea.querySelector('span').textContent = 'Clique para enviar o documento';
+          // Reativar o padrão "Não" nas enquetes (reset não limpa radios)
+          document.querySelectorAll('input[name="esquina"]').forEach(r => { if (r.value === 'nao') r.checked = true; });
+          document.querySelectorAll('input[name="mais_frente"]').forEach(r => { if (r.value === 'nao') r.checked = true; });
           
           // Recarregar notificações após 1,5s
           setTimeout(() => {
@@ -911,7 +937,7 @@
       });
     }
 
-    // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (COM DATA E HORA DO AGENDAMENTO) ==========
+    // ========== FUNÇÃO PARA GERAR NOTIFICAÇÕES (inalterada) ==========
     async function gerarNotificacoes(solicitacoes) {
       if (!solicitacoes || solicitacoes.length === 0) {
         return '<p style="color: #64748b; font-size: 14px;">Você ainda não fez nenhuma solicitação.</p>';
@@ -948,7 +974,7 @@
           `;
         }
         
-        // ========== BUSCAR AGENDAMENTOS (DATA E HORA) ==========
+        // Buscar agendamentos
         let agendamentoHTML = '';
         if (s.status === 'approved' || s.status === 'forwarded') {
           const agendamentos = await buscarAgendamentos(s.id);
