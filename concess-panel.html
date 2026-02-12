@@ -280,11 +280,40 @@
       background: #f8fafc;
     }
 
+    /* ===== NOVOS ESTILOS PARA AGENDAMENTO COM HORÁRIO ===== */
+    .agendamento-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
     .date-input {
       padding: 8px 12px;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       font-family: 'Inter', sans-serif;
+    }
+    .time-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      width: 240px;
+    }
+    .time-input::placeholder {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .agendamento-info {
+      background: #e0f2fe;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #0369a1;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     footer {
@@ -322,6 +351,10 @@
       }
       .sidebar {
         width: 100%;
+      }
+      .agendamento-container {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -433,7 +466,46 @@
       return data;
     }
 
-    // ===== CARREGAR TAREFAS PENDENTES =====
+    // ===== FUNÇÃO DE AGENDAMENTO MELHORADA (COM HORÁRIO) =====
+    window.agendar = async (tarefaId) => {
+      const dateInput = document.getElementById(`date_${tarefaId}`);
+      const timeInput = document.getElementById(`time_${tarefaId}`);
+      
+      const scheduledDate = dateInput?.value;
+      const scheduledTime = timeInput?.value.trim();
+
+      if (!scheduledDate) {
+        alert('Selecione a data para o agendamento.');
+        return;
+      }
+
+      if (!scheduledTime) {
+        alert('Digite o horário planejado (ex: entre 14:00 e 15:00 horas).');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('concessao_tarefas')
+          .update({
+            status: 'scheduled',
+            scheduled_date: scheduledDate,
+            scheduled_time: scheduledTime,
+            scheduled_by: usuario.id
+          })
+          .eq('id', tarefaId);
+
+        if (error) throw error;
+
+        alert('Agendamento realizado com sucesso!');
+        renderizarPainel(); // recarrega as abas
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao agendar: ' + err.message);
+      }
+    };
+
+    // ===== CARREGAR TAREFAS PENDENTES (COM CAMPOS DE HORÁRIO) =====
     async function carregarPendentes() {
       const { data: tarefas, error } = await supabase
         .from('concessao_tarefas')
@@ -473,7 +545,6 @@
             <th>Endereço</th>
             <th>IPTU</th>
             <th>Croqui</th>
-            <th>Data do deferimento</th>
             <th>Servidor</th>
             <th>Agendar instalação</th>
           </tr>
@@ -494,13 +565,16 @@
               `<a href="${req.deferred_document_url}" target="_blank" style="color: #2563eb;"><i class="fas fa-file-pdf"></i> Ver croqui</a>` : 
               '-'}
           </td>
-          <td>${req.analyzed_at ? new Date(req.analyzed_at).toLocaleDateString('pt-BR') : '-'}</td>
           <td>${servidor?.nome || '-'}</td>
           <td>
-            <input type="date" id="date_${tarefa.id}" class="date-input" style="width:140px;" required>
-            <button class="btn btn-success btn-sm" onclick="window.agendar('${tarefa.id}')" style="margin-left:8px;">
-              <i class="fas fa-calendar-check"></i> Agendar
-            </button>
+            <div class="agendamento-container">
+              <input type="date" id="date_${tarefa.id}" class="date-input" style="width:140px;" required>
+              <input type="text" id="time_${tarefa.id}" class="time-input" 
+                     placeholder="ex: entre 14:00 e 15:00 horas" required>
+              <button class="btn btn-success" onclick="window.agendar('${tarefa.id}')" style="white-space: nowrap;">
+                <i class="fas fa-calendar-check"></i> Agendar
+              </button>
+            </div>
           </td>
         </tr>`;
       }
@@ -509,7 +583,7 @@
       return html;
     }
 
-    // ===== CARREGAR TAREFAS AGENDADAS =====
+    // ===== CARREGAR TAREFAS AGENDADAS (COM HORÁRIO) =====
     async function carregarAgendadas() {
       const { data: tarefas, error } = await supabase
         .from('concessao_tarefas')
@@ -517,6 +591,7 @@
           id,
           request_id,
           scheduled_date,
+          scheduled_time,
           scheduled_by,
           croqui_requests!inner (
             id,
@@ -547,7 +622,7 @@
           <tr>
             <th>Munícipe</th>
             <th>Endereço</th>
-            <th>Data agendada</th>
+            <th>Data e horário</th>
             <th>Agendado por</th>
           </tr>
         </thead>
@@ -557,10 +632,19 @@
         const req = tarefa.croqui_requests;
         const municipe = await buscarMunicipePorUserId(req.user_id);
         
+        // Formatar data e horário de forma legível
+        const dataFormatada = new Date(tarefa.scheduled_date).toLocaleDateString('pt-BR');
+        const horario = tarefa.scheduled_time || 'horário não informado';
+        
         html += `<tr>
           <td>${municipe?.full_name || '-'}</td>
           <td>${req.logradouro || ''} - QD ${req.quadra || ''} LT ${req.lote || ''}</td>
-          <td>${new Date(tarefa.scheduled_date).toLocaleDateString('pt-BR')}</td>
+          <td>
+            <span class="agendamento-info">
+              <i class="fas fa-calendar-alt"></i> ${dataFormatada}
+              <i class="fas fa-clock" style="margin-left: 8px;"></i> ${horario}
+            </span>
+          </td>
           <td>${tarefa.concessionarias?.usuario || '-'}</td>
         </tr>`;
       }
@@ -568,35 +652,6 @@
       html += `</tbody></table></div>`;
       return html;
     }
-
-    // ===== FUNÇÃO DE AGENDAMENTO (global para onclick) =====
-    window.agendar = async (tarefaId) => {
-      const dateInput = document.getElementById(`date_${tarefaId}`);
-      const scheduledDate = dateInput.value;
-      if (!scheduledDate) {
-        alert('Selecione uma data para o agendamento.');
-        return;
-      }
-
-      try {
-        const { error } = await supabase
-          .from('concessao_tarefas')
-          .update({
-            status: 'scheduled',
-            scheduled_date: scheduledDate,
-            scheduled_by: usuario.id
-          })
-          .eq('id', tarefaId);
-
-        if (error) throw error;
-
-        alert('Agendamento realizado com sucesso!');
-        renderizarPainel(); // recarrega as abas
-      } catch (err) {
-        console.error(err);
-        alert('Erro ao agendar: ' + err.message);
-      }
-    };
 
     // ===== RENDERIZAÇÃO PRINCIPAL =====
     async function renderizarPainel() {
